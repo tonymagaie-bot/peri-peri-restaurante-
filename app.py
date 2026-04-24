@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime
 import qrcode
 from io import BytesIO
+import urllib.parse
 
 app = Flask(__name__)
 
@@ -193,10 +194,16 @@ def kitchen():
 
     return render_template_string("""
 <style>
-body{background:#111;color:white;font-family:Arial;padding:10px}
-h1{text-align:center;color:#ffcc00}
-.order{background:#1c1c1c;padding:15px;margin:10px 0;border-radius:12px}
-button{margin:5px;padding:8px;border:none;border-radius:6px}
+body{background:#0b0b0b;color:white;font-family:Arial;padding:15px}
+h1{text-align:center;color:#ffcc00;font-size:42px}
+h2{font-size:28px;margin-top:30px;border-left:6px solid #ff3b3b;padding-left:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:15px}
+.order{background:#1a1a1a;padding:20px;border-radius:15px;font-size:22px}
+.status{padding:10px;border-radius:10px;font-weight:bold;text-align:center}
+.pending{background:#ffc107;color:black}
+.preparing{background:#17a2b8}
+.done{background:#28a745}
+button{margin:8px;padding:12px;border:none;border-radius:8px;font-size:18px}
 .yellow{background:#ffc107}
 .green{background:#28a745;color:white}
 .red{background:#dc3545;color:white}
@@ -204,44 +211,45 @@ button{margin:5px;padding:8px;border:none;border-radius:6px}
 
 <h1>🍹 Bar e Cozinha</h1>
 
-<audio id="sound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
-
 <h2>📌 Ativos</h2>
-
+<div class="grid">
 {% for o in active %}
 <div class="order">
-<b>Mesa {{o[4]}}</b> | {{o[1]}}<br>
-{{o[2]}}<br><br>
-{{o[5]}}<br><br>
+<b style="font-size:26px;">Mesa {{o[4]}}</b><br>
+👤 {{o[1]}}<br><br>
+🍽️ {{o[2]}}<br><br>
+
+<div class="status 
+{% if o[5]=='Pendente' %}pending{% endif %}
+{% if o[5]=='Preparando' %}preparing{% endif %}
+{% if o[5]=='Concluído' %}done{% endif %}
+">
+{{o[5]}}
+</div>
 
 <button class="yellow" onclick="update({{o[0]}},'Preparando')">Preparar</button>
 <button class="green" onclick="update({{o[0]}},'Concluído')">Concluir</button>
 <button class="red" onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
+<button onclick="window.open('/send_whatsapp/{{o[0]}}')">📲 WhatsApp</button>
 </div>
 {% endfor %}
+</div>
 
 <h2>✅ Concluídos</h2>
-
+<div class="grid">
 {% for o in done %}
 <div class="order">
-<b>Mesa {{o[4]}}</b> | {{o[1]}}<br>
-{{o[2]}}<br>
-✔ Concluído
+<b>Mesa {{o[4]}}</b><br>
+👤 {{o[1]}}<br><br>
+🍽️ {{o[2]}}<br>
+<div class="status done">Concluído</div>
 <button onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
+<button onclick="window.open('/send_whatsapp/{{o[0]}}')">📲</button>
 </div>
 {% endfor %}
+</div>
 
 <script>
-let last=0;
-function check(){
-let now=document.querySelectorAll(".order").length;
-if(now>last){
-document.getElementById("sound").play();
-}
-last=now;
-}
-setInterval(check,3000);
-
 function update(id,status){
 fetch("/update_status",{
 method:"POST",
@@ -252,78 +260,43 @@ body:JSON.stringify({id:id,status:status})
 </script>
 """, active=active, done=done)
 
-# ---------------- UPDATE STATUS ----------------
-@app.route("/update_status", methods=["POST"])
-def update_status():
-    d=request.json
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    c.execute("UPDATE orders SET status=? WHERE id=?", (d["status"],d["id"]))
-    conn.commit()
-    conn.close()
-    return jsonify(ok=True)
-
-# ---------------- RECEIPT ----------------
-@app.route("/receipt_any/<int:id>")
-def receipt_any(id):
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
-    conn.close()
-
-    return render_template_string("""
-<body onload="window.print()">
-<h2>🌶️ Peri Peri</h2>
-<p>Nome: {{o[1]}}</p>
-<p>Mesa: {{o[4]}}</p>
-<p>Status: {{o[5]}}</p>
-<p>Itens: {{o[2]}}</p>
-<p>Total: {{o[3]}} MZN</p>
-<p>{{o[6]}}</p>
-</body>
-""", o=o)
-
-# ---------------- QR ----------------
-@app.route("/qr/<int:table>")
-def qr(table):
-    url = request.host_url + "?table=" + str(table)
-    img = qrcode.make(url)
-    buf = BytesIO()
-    img.save(buf)
-    buf.seek(0)
-    return send_file(buf, mimetype="image/png")
-
-@app.route("/qr_tables")
-def qr_tables():
-    return render_template_string("""
-<h1>📱 QR Codes Mesas</h1>
-{% for i in range(1,11) %}
-<div>
-<h3>Mesa {{i}}</h3>
-<img src="/qr/{{i}}" width="200">
-</div>
-{% endfor %}
-""")
-
-# ---------------- WHATSAPP ----------------
+# ---------------- WHATSAPP SEND ----------------
 @app.route("/send_whatsapp/<int:id>")
 def send_whatsapp(id):
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
     conn.close()
 
-    phone=""
+    phone = ""
     try:
-        phone=o[7]
+        phone = o[7]
     except:
         pass
 
     if not phone:
-        return jsonify({"msg":"No phone provided"})
+        return "<h3>❌ Cliente não forneceu WhatsApp</h3>"
 
-    print("SEND TO:",phone)
-    return jsonify(ok=True)
+    phone = phone.replace(" ", "").replace("+", "")
+
+    msg = f"""
+🌶️ Peri Peri
+
+Nome: {o[1]}
+Mesa: {o[4]}
+
+Itens:
+{o[2]}
+
+Total: {o[3]} MZN
+Status: {o[5]}
+Data: {o[6]}
+
+Obrigado!
+"""
+
+    url = "https://wa.me/" + phone + "?text=" + urllib.parse.quote(msg)
+    return redirect(url)
 
 # ---------------- RUN ----------------
 if __name__=="__main__":
