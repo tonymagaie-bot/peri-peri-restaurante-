@@ -1,6 +1,8 @@
-from flask import Flask, request, jsonify, render_template_string, redirect
+from flask import Flask, request, jsonify, render_template_string, redirect, send_file
 import sqlite3
 from datetime import datetime
+import qrcode
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -44,6 +46,19 @@ def init_db():
 
 init_db()
 
+# ✅ SAFE DB UPGRADE (ADD PHONE COLUMN)
+def ensure_phone_column():
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    try:
+        c.execute("ALTER TABLE orders ADD COLUMN phone TEXT")
+    except:
+        pass
+    conn.commit()
+    conn.close()
+
+ensure_phone_column()
+
 # ---------------- CUSTOMER UI ----------------
 @app.route("/")
 def menu():
@@ -68,6 +83,7 @@ input{width:100%;padding:10px;margin-bottom:10px;border-radius:8px}
 
 <p>Mesa {{table}}</p>
 <input id="name" placeholder="Seu nome">
+<input id="phone" placeholder="WhatsApp (opcional)">
 
 <h2>🍽️ Comida</h2>
 {% for i in items if i[3]=='food' %}
@@ -85,7 +101,7 @@ input{width:100%;padding:10px;margin-bottom:10px;border-radius:8px}
 </div>
 {% endfor %}
 
-<h3>🛒 Carrinho</h3>
+<h3>🍽️ Bandeja</h3>
 <ul id="cart"></ul>
 <h3 id="total">0 MZN</h3>
 
@@ -107,6 +123,7 @@ method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 name:document.getElementById("name").value,
+phone:document.getElementById("phone").value,
 items:cart,
 total:total,
 table:"{{table}}"
@@ -126,9 +143,10 @@ def order():
     conn=sqlite3.connect("restaurant.db")
     c=conn.cursor()
 
-    c.execute("INSERT INTO orders VALUES (NULL,?,?,?,?,?,?)",
+    c.execute("INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
               (d["name"],str(d["items"]),d["total"],d["table"],
-               "Pendente",datetime.now().strftime("%d-%m-%Y %H:%M")))
+               "Pendente",datetime.now().strftime("%d-%m-%Y %H:%M"),
+               d.get("phone","")))
 
     oid=c.lastrowid
     conn.commit()
@@ -136,179 +154,29 @@ def order():
 
     return jsonify({"id":oid})
 
-# ---------------- TRACK ----------------
-@app.route("/track/<int:id>")
-def track(id):
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
-    conn.close()
+# ---------------- QR GENERATOR ----------------
+@app.route("/qr/<int:table>")
+def qr(table):
+    url = request.host_url + "?table=" + str(table)
+    img = qrcode.make(url)
+    buf = BytesIO()
+    img.save(buf)
+    buf.seek(0)
+    return send_file(buf, mimetype="image/png")
 
+@app.route("/qr_tables")
+def qr_tables():
     return render_template_string("""
-<style>
-body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:20px}
-.box{background:#1c1c1c;padding:20px;border-radius:12px}
-</style>
+    <h1>📱 QR Codes Mesas</h1>
+    {% for i in range(1,11) %}
+        <div>
+            <h3>Mesa {{i}}</h3>
+            <img src="/qr/{{i}}" width="200">
+        </div>
+    {% endfor %}
+    """)
 
-<h1>📦 Pedido</h1>
-
-<div class="box">
-<p><b>Nome:</b> {{o[1]}}</p>
-<p><b>Mesa:</b> {{o[4]}}</p>
-<p><b>Status:</b> {{o[5]}}</p>
-<p><b>Data:</b> {{o[6]}}</p>
-</div>
-
-<button onclick="window.location='/?table={{o[4]}}'">⬅ Voltar</button>
-""", o=o)
-
-# ---------------- KITCHEN ----------------
-@app.route("/kitchen")
-def kitchen():
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-
-    active=c.execute("SELECT * FROM orders WHERE status!='Concluído' ORDER BY id DESC").fetchall()
-    done=c.execute("SELECT * FROM orders WHERE status='Concluído' ORDER BY id DESC LIMIT 20").fetchall()
-
-    conn.close()
-
-    return render_template_string("""
-<style>
-body{background:#111;color:white;font-family:Arial;padding:10px}
-h1{text-align:center;color:#ffcc00}
-.order{background:#1c1c1c;padding:15px;margin:10px 0;border-radius:12px}
-button{margin:5px;padding:8px;border:none;border-radius:6px}
-.yellow{background:#ffc107}
-.green{background:#28a745;color:white}
-.red{background:#dc3545;color:white}
-</style>
-
-<h1>🍹 Bar e Cozinha</h1>
-
-<audio id="sound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
-
-<h2>📌 Ativos</h2>
-
-{% for o in active %}
-<div class="order">
-<b>Mesa {{o[4]}}</b> | {{o[1]}}<br>
-{{o[2]}}<br><br>
-{{o[5]}}<br><br>
-
-<button class="yellow" onclick="update({{o[0]}},'Preparando')">Preparar</button>
-<button class="green" onclick="update({{o[0]}},'Concluído')">Concluir</button>
-<button class="red" onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
-</div>
-{% endfor %}
-
-<h2>✅ Concluídos</h2>
-
-{% for o in done %}
-<div class="order">
-<b>Mesa {{o[4]}}</b> | {{o[1]}}<br>
-{{o[2]}}<br>
-✔ Concluído
-<button onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
-</div>
-{% endfor %}
-
-<script>
-let last=0;
-function check(){
-let now=document.querySelectorAll(".order").length;
-if(now>last){
-document.getElementById("sound").play();
-}
-last=now;
-}
-setInterval(check,3000);
-
-function update(id,status){
-fetch("/update_status",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({id:id,status:status})
-}).then(()=>location.reload());
-}
-</script>
-""", active=active, done=done)
-
-# ---------------- UPDATE ----------------
-@app.route("/update_status", methods=["POST"])
-def update():
-    d=request.json
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    c.execute("UPDATE orders SET status=? WHERE id=?", (d["status"],d["id"]))
-    conn.commit()
-    conn.close()
-    return jsonify(ok=True)
-
-# ---------------- RECEIPT ANYTIME ----------------
-@app.route("/receipt_any/<int:id>")
-def receipt_any(id):
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
-    conn.close()
-
-    return render_template_string("""
-<body onload="window.print()">
-<h2>🌶️ Peri Peri</h2>
-
-<p>Nome: {{o[1]}}</p>
-<p>Mesa: {{o[4]}}</p>
-<p>Status: {{o[5]}}</p>
-<p>Itens: {{o[2]}}</p>
-<p>Total: {{o[3]}} MZN</p>
-<p>{{o[6]}}</p>
-</body>
-""", o=o)
-
-# ---------------- ADMIN ----------------
-@app.route("/admin", methods=["GET","POST"])
-def admin():
-    if request.method=="POST":
-        if request.form["user"]=="admin" and request.form["pw"]=="1234":
-            return redirect("/dashboard")
-        return "❌ Login errado"
-
-    return """
-<h2>🔐 Admin Login</h2>
-<form method="POST">
-<input name="user" placeholder="User"><br>
-<input name="pw" type="password" placeholder="Password"><br>
-<button>Login</button>
-</form>
-"""
-
-# ---------------- DASHBOARD ----------------
-@app.route("/dashboard")
-def dashboard():
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    orders=c.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
-    conn.close()
-
-    return render_template_string("""
-<h1>📊 Dashboard</h1>
-
-<a href="/kitchen">🍹 Cozinha</a>
-
-{% for o in orders %}
-<div style="border:1px solid #000;margin:10px;padding:10px;">
-<b>Mesa {{o[4]}}</b> | {{o[1]}} | {{o[5]}}<br>
-{{o[2]}}<br>
-{{o[6]}}
-
-<br>
-<button onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
-</div>
-{% endfor %}
-""", orders=orders)
-
-# ---------------- WHATSAPP (DEMO) ----------------
+# ---------------- WHATSAPP (UPDATED) ----------------
 @app.route("/send_whatsapp/<int:id>")
 def send_whatsapp(id):
     conn=sqlite3.connect("restaurant.db")
@@ -316,8 +184,18 @@ def send_whatsapp(id):
     o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
     conn.close()
 
+    phone = ""
+    try:
+        phone = o[7]
+    except:
+        pass
+
+    if not phone:
+        return jsonify({"msg":"No phone provided"})
+
     msg=f"""
-Peri Peri Order
+🧾 Peri Peri
+
 Nome: {o[1]}
 Mesa: {o[4]}
 Itens: {o[2]}
@@ -325,7 +203,9 @@ Total: {o[3]}
 Status: {o[5]}
 """
 
-    print("WHATSAPP:", msg)
+    print("SEND TO:", phone)
+    print(msg)
+
     return jsonify(ok=True)
 
 # ---------------- RUN ----------------
