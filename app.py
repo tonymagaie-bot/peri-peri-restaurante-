@@ -1,19 +1,10 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, redirect
 import sqlite3
 from datetime import datetime
 
 app = Flask(__name__)
 
 NAME = "Peri Peri 🌶️"
-
-# ---------------- STATUS TRANSLATION ----------------
-def status_pt(status):
-    mapping = {
-        "Pendente": "Pendente",
-        "Preparando": "Preparando",
-        "Concluído": "Concluído"
-    }
-    return mapping.get(status, status)
 
 # ---------------- DATABASE ----------------
 def init_db():
@@ -64,18 +55,6 @@ def menu():
     conn.close()
 
     return render_template_string("""
-    <html>
-    <head>
-    <style>
-        body{background:#111;color:#fff;font-family:sans-serif;padding:15px}
-        h1{color:#ff4d4d}
-        .card{background:#222;padding:10px;margin:8px;border-radius:8px}
-        button{background:#ff4d4d;color:#fff;border:none;padding:6px}
-        input{padding:5px;margin:5px}
-    </style>
-    </head>
-
-    <body>
     <h1>{{name}}</h1>
     <p>Mesa {{table}}</p>
 
@@ -83,16 +62,14 @@ def menu():
 
     <h2>🍽️ Comida</h2>
     {% for i in items if i[3]=='food' %}
-    <div class="card">
-        {{i[1]}} - {{i[2]}} MZN
+    <div>{{i[1]}} - {{i[2]}} MZN
         <button onclick="add('{{i[1]}}',{{i[2]}})">+</button>
     </div>
     {% endfor %}
 
     <h2>🍺 Bebidas</h2>
     {% for i in items if i[3]=='drink' %}
-    <div class="card">
-        {{i[1]}} - {{i[2]}} MZN
+    <div>{{i[1]}} - {{i[2]}} MZN
         <button onclick="add('{{i[1]}}',{{i[2]}})">+</button>
     </div>
     {% endfor %}
@@ -130,8 +107,6 @@ def menu():
         });
     }
     </script>
-    </body>
-    </html>
     """, items=items, name=NAME, table=table)
 
 # ---------------- ORDER ----------------
@@ -168,10 +143,8 @@ def track(id):
     <p>Nome: {{o[1]}}</p>
     <p>Mesa: {{o[4]}}</p>
     <p>Status: {{o[5]}}</p>
-    <p>Status PT: {{o[5]}}</p>
     <p>Data: {{o[6]}}</p>
 
-    <br>
     <button onclick="window.location='/?table={{o[4]}}'">⬅ Voltar ao Menu</button>
     """, o=o)
 
@@ -209,7 +182,7 @@ def kitchen():
         <br><br>
         <button onclick="update({{o[0]}},'Preparando')">Preparando</button>
         <button onclick="update({{o[0]}},'Concluído')">Concluído</button>
-        <button onclick="printR({{o[0]}})">🧾</button>
+        <button onclick="window.open('/receipt_any/{{o[0]}}','_blank')">🧾</button>
     </div>
     {% endfor %}
 
@@ -220,11 +193,13 @@ def kitchen():
         <b>Mesa {{o[4]}}</b> | {{o[1]}}<br>
         {{o[2]}}<br>
         ✔ Concluído
+
+        <button onclick="window.open('/receipt_any/{{o[0]}}','_blank')">🧾</button>
     </div>
     {% endfor %}
 
     <script>
-    let lastCount = 0;
+    let lastCount=0;
 
     function check(){
         let current=document.querySelectorAll("div").length;
@@ -247,10 +222,6 @@ def kitchen():
             body:JSON.stringify({id:id,status:status})
         }).then(()=>location.reload());
     }
-
-    function printR(id){
-        window.open("/receipt/"+id,"_blank");
-    }
     </script>
     """, active=active, done=done)
 
@@ -265,9 +236,9 @@ def update():
     conn.close()
     return jsonify(ok=True)
 
-# ---------------- RECEIPT ----------------
-@app.route("/receipt/<int:id>")
-def receipt(id):
+# ---------------- RECEIPT ANYTIME ----------------
+@app.route("/receipt_any/<int:id>")
+def receipt_any(id):
     conn=sqlite3.connect("restaurant.db")
     c=conn.cursor()
     o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
@@ -275,14 +246,93 @@ def receipt(id):
 
     return render_template_string("""
     <body onload="window.print()">
-    <h2>Peri Peri 🌶️</h2>
+    <h2>🧾 Peri Peri 🌶️</h2>
+
     <p>Nome: {{o[1]}}</p>
     <p>Mesa: {{o[4]}}</p>
+    <p>Status: {{o[5]}}</p>
     <p>Itens: {{o[2]}}</p>
     <p>Total: {{o[3]}} MZN</p>
     <p>{{o[6]}}</p>
     </body>
     """, o=o)
+
+# ---------------- ADMIN LOGIN ----------------
+@app.route("/admin", methods=["GET","POST"])
+def admin():
+    if request.method=="POST":
+        if request.form["user"]=="admin" and request.form["pw"]=="1234":
+            return redirect("/dashboard")
+        return "❌ Login errado"
+
+    return """
+    <h2>🔐 Admin Login</h2>
+    <form method="POST">
+        <input name="user" placeholder="User"><br>
+        <input name="pw" type="password" placeholder="Password"><br>
+        <button type="submit">Login</button>
+    </form>
+    """
+
+# ---------------- DASHBOARD ----------------
+@app.route("/dashboard")
+def dashboard():
+    conn=sqlite3.connect("restaurant.db")
+    c=conn.cursor()
+    orders=c.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
+    conn.close()
+
+    return render_template_string("""
+    <h1>📊 Admin Dashboard</h1>
+
+    <a href="/kitchen">🍹 Cozinha</a>
+
+    {% for o in orders %}
+    <div style="border:1px solid #000;margin:10px;padding:10px;">
+        <b>Mesa {{o[4]}}</b> | {{o[1]}} | {{o[5]}}<br>
+        {{o[2]}}<br>
+        {{o[6]}}
+
+        <br><br>
+        <button onclick="window.open('/receipt_any/{{o[0]}}','_blank')">🧾 Recibo</button>
+        <button onclick="sendWA({{o[0]}})">📲 WhatsApp</button>
+    </div>
+    {% endfor %}
+
+    <script>
+    function sendWA(id){
+        fetch("/send_whatsapp/"+id)
+        .then(()=>alert("Mensagem enviada (modo demo)"))
+    }
+    </script>
+    """, orders=orders)
+
+# ---------------- WHATSAPP (DEMO) ----------------
+def send_whatsapp_message(number, message):
+    print("WHATSAPP TO:", number)
+    print(message)
+
+@app.route("/send_whatsapp/<int:id>")
+def send_whatsapp(id):
+    conn=sqlite3.connect("restaurant.db")
+    c=conn.cursor()
+    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+    conn.close()
+
+    msg=f"""
+🧾 Peri Peri Order
+
+Nome: {o[1]}
+Mesa: {o[4]}
+Itens: {o[2]}
+Total: {o[3]} MZN
+Status: {o[5]}
+Data: {o[6]}
+"""
+
+    send_whatsapp_message("+258XXXXXXXXX", msg)
+
+    return jsonify(ok=True)
 
 # ---------------- RUN ----------------
 if __name__=="__main__":
