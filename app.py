@@ -20,6 +20,7 @@ def init_db():
 
     c.execute('''CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY,
+        name TEXT,
         items TEXT,
         total INTEGER,
         table_no TEXT,
@@ -43,7 +44,7 @@ def init_db():
 
 init_db()
 
-# ---------------- CUSTOMER ----------------
+# ---------------- CUSTOMER PAGE ----------------
 @app.route("/")
 def menu():
     table = request.args.get("table", "1")
@@ -57,16 +58,19 @@ def menu():
     <html>
     <head>
     <style>
-        body {background:#111;color:#fff;font-family:sans-serif;padding:15px;}
-        h1 {color:#ff4d4d;}
-        .card {background:#222;padding:10px;margin:8px;border-radius:8px;}
-        button {background:#ff4d4d;color:#fff;border:none;padding:6px;}
+    body {background:#111;color:#fff;font-family:sans-serif;padding:15px;}
+    h1 {color:#ff4d4d;}
+    .card {background:#222;padding:10px;margin:8px;border-radius:8px;}
+    button {background:#ff4d4d;color:#fff;border:none;padding:6px;}
+    input {padding:5px;margin:5px;}
     </style>
     </head>
-    <body>
 
+    <body>
     <h1>{{name}}</h1>
     <p>Mesa: {{table}}</p>
+
+    <input id="name" placeholder="Seu nome">
 
     <h2>🍗 Comida</h2>
     {% for i in items if i[3]=='food' %}
@@ -86,48 +90,105 @@ def menu():
 
     <h2>🛒 Carrinho</h2>
     <ul id="cart"></ul>
-    <h3 id="total">0</h3>
+    <h3 id="total">0 MZN</h3>
 
     <button onclick="order()">Enviar Pedido</button>
 
     <script>
-    let cart=[];let total=0;
+    let cart=[]; let total=0;
 
     function add(n,p){
-        cart.push(n); total+=p;
-        cartEl.innerHTML += "<li>"+n+"</li>";
-        totalEl.innerText=total+" MZN";
+        cart.push(n);
+        total+=p;
+        document.getElementById("cart").innerHTML += "<li>"+n+"</li>";
+        document.getElementById("total").innerText = total + " MZN";
     }
 
     function order(){
-        fetch("/order",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({items:cart,total:total,table:"{{table}}"})})
-        .then(()=>alert("Pedido enviado!"));
+        fetch("/order",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                name: document.getElementById("name").value,
+                items: cart,
+                total: total,
+                table: "{{table}}"
+            })
+        })
+        .then(res=>res.json())
+        .then(data=>{
+            window.location = "/track/" + data.id;
+        });
     }
     </script>
-
-    </body></html>
+    </body>
+    </html>
     """, items=items, name=NAME, table=table)
 
-# ---------------- ORDER ----------------
+# ---------------- CREATE ORDER ----------------
 @app.route("/order", methods=["POST"])
 def order():
-    data=request.json
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
+    data = request.json
 
-    c.execute("INSERT INTO orders (items,total,table_no,status,time) VALUES (?,?,?,?,?)",
-              (str(data["items"]),data["total"],data["table"],"pending",datetime.now().strftime("%H:%M")))
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
 
-    conn.commit(); conn.close()
-    return jsonify(ok=True)
+    c.execute("INSERT INTO orders (name,items,total,table_no,status,time) VALUES (?,?,?,?,?,?)",
+              (data["name"], str(data["items"]), data["total"], data["table"],
+               "pending", datetime.now().strftime("%H:%M")))
+
+    oid = c.lastrowid
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"id": oid})
+
+# ---------------- TRACK ORDER ----------------
+@app.route("/track/<int:id>")
+def track(id):
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+    conn.close()
+
+    return render_template_string("""
+    <meta http-equiv="refresh" content="5">
+    <h1>📦 Estado do Pedido</h1>
+    <p>Nome: {{o[1]}}</p>
+    <p>Mesa: {{o[4]}}</p>
+    <p>Itens: {{o[2]}}</p>
+    <p>Status: {{o[5]}}</p>
+    <p>Hora: {{o[6]}}</p>
+
+    <a href="/receipt/{{o[0]}}">🧾 Imprimir Recibo</a>
+    """, o=o)
+
+# ---------------- RECEIPT ----------------
+@app.route("/receipt/<int:id>")
+def receipt(id):
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+    conn.close()
+
+    return render_template_string("""
+    <body onload="window.print()">
+    <h2>🧾 Peri Peri 🌶️</h2>
+    <p>Nome: {{o[1]}}</p>
+    <p>Mesa: {{o[4]}}</p>
+    <p>Itens: {{o[2]}}</p>
+    <p>Total: {{o[3]}} MZN</p>
+    <p>Hora: {{o[6]}}</p>
+    </body>
+    """, o=o)
 
 # ---------------- KITCHEN ----------------
 @app.route("/kitchen")
 def kitchen():
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    orders=c.execute("SELECT * FROM orders WHERE status!='done' ORDER BY id DESC").fetchall()
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    orders = c.execute("SELECT * FROM orders WHERE status!='done' ORDER BY id DESC").fetchall()
     conn.close()
 
     return render_template_string("""
@@ -139,14 +200,15 @@ def kitchen():
     {% for o in orders %}
     <div style="padding:10px;margin:10px;
         background:
-        {% if o[4]=='pending' %}orange
-        {% elif o[4]=='preparing' %}yellow
+        {% if o[5]=='pending' %}orange
+        {% elif o[5]=='preparing' %}yellow
         {% else %}lightgreen{% endif %};">
 
-        <b>Mesa {{o[3]}}</b> | {{o[5]}}<br>
-        {{o[1]}}<br>
-        {{o[4]}}<br>
+        <b>Mesa {{o[4]}}</b> | {{o[1]}} | {{o[6]}}<br>
+        {{o[2]}}<br>
+        Estado: {{o[5]}}
 
+        <br><br>
         <button onclick="update({{o[0]}},'preparing')">Preparando</button>
         <button onclick="update({{o[0]}},'done')">Concluído</button>
     </div>
@@ -156,10 +218,11 @@ def kitchen():
     document.getElementById("sound").play();
 
     function update(id,status){
-        fetch("/update_status",{method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({id:id,status:status})})
-        .then(()=>location.reload());
+        fetch("/update_status",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({id:id,status:status})
+        }).then(()=>location.reload());
     }
     </script>
     """, orders=orders)
@@ -167,13 +230,16 @@ def kitchen():
 # ---------------- UPDATE STATUS ----------------
 @app.route("/update_status", methods=["POST"])
 def update_status():
-    d=request.json
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
+    d = request.json
+
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
     c.execute("UPDATE orders SET status=? WHERE id=?", (d["status"], d["id"]))
-    conn.commit(); conn.close()
+    conn.commit()
+    conn.close()
+
     return jsonify(ok=True)
 
 # ---------------- RUN ----------------
-if __name__=="__main__":
+if __name__ == "__main__":
     app.run()
