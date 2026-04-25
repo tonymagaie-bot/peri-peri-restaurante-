@@ -496,7 +496,14 @@ def send_whatsapp(id):
     if not phone:
         return "<h3>❌ Cliente não forneceu WhatsApp</h3>"
 
-    phone = phone.replace(" ", "").replace("+", "")
+    # تنظيف الرقم
+phone = phone.replace(" ", "").replace("+", "")
+
+# adicionar código de Moçambique se não existir
+if phone.startswith("0"):
+    phone = "258" + phone[1:]
+elif not phone.startswith("258"):
+    phone = "258" + phone
 
     msg = f"""
 🌶️ Peri Peri
