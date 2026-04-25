@@ -175,21 +175,29 @@ window.location="/track/"+d.id;
 # ---------------- ORDER ----------------
 @app.route("/order", methods=["POST"])
 def order():
-    d=request.json
+    d = request.json
 
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
 
-    c.execute("INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
-              (d["name"],str(d["items"]),d["total"],d["table"],
-               "Pendente",datetime.now().strftime("%d-%m-%Y %H:%M"),
-               d.get("phone","")))
+    # 🔥 NEW: order starts waiting for customer confirmation
+    c.execute("""
+        INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)
+    """, (
+        d["name"],
+        str(d["items"]),
+        d["total"],
+        d["table"],
+        "Aguardando Confirmação",
+        datetime.now().strftime("%d-%m-%Y %H:%M"),
+        d.get("phone", "")
+    ))
 
-    oid=c.lastrowid
+    oid = c.lastrowid
     conn.commit()
     conn.close()
 
-    return jsonify({"id":oid})
+    return jsonify({"id": oid})
 
 # ---------------- TRACK ----------------
 @app.route("/track/<int:id>")
@@ -231,60 +239,109 @@ def orders_json():
     return jsonify(data)
 
 # ---------------- KITCHEN ----------------
-@app.route("/kitchen")
+":"@app.route("/kitchen")
 def kitchen():
+    conn=sqlite3.connect("restaurant.db")
+    c=conn.cursor()
 
-    if not session.get("admin"):
-        return redirect("/admin")
+    active=c.execute("SELECT * FROM orders WHERE status!='Concluído' ORDER BY id DESC").fetchall()
+    done=c.execute("SELECT * FROM orders WHERE status='Concluído' ORDER BY id DESC LIMIT 20").fetchall()
+
+    conn.close()
 
     return render_template_string("""
-<h1>🍹 Cozinha (Live)</h1>
+<style>
+body{background:#0b0b0b;color:white;font-family:Arial;padding:15px}
+h1{text-align:center;color:#ffcc00;font-size:42px}
+h2{font-size:28px;margin-top:30px;border-left:6px solid #ff3b3b;padding-left:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:15px}
+.order{background:#1a1a1a;padding:20px;border-radius:15px;font-size:22px}
+.status{padding:10px;border-radius:10px;font-weight:bold;text-align:center}
+.pending{background:#ffc107;color:black}
+.preparing{background:#17a2b8}
+.done{background:#28a745}
+.delivering{background:#ff9800;color:black}
 
-<a href="/sales"><button>📊 Vendas</button></a>
+button{margin:8px;padding:12px;border:none;border-radius:8px;font-size:18px;cursor:pointer}
+.yellow{background:#ffc107}
+.green{background:#28a745;color:white}
+.red{background:#dc3545;color:white}
+.blue{background:#17a2b8;color:white}
+.orange{background:#ff9800;color:black}
+</style>
 
-<div id="orders"></div>
+<h1>🍹 Bar e Cozinha</h1>
+
+<h2>📌 Ativos</h2>
+<div class="grid">
+{% for o in active %}
+<div class="order">
+<b style="font-size:26px;">Mesa {{o[4]}}</b><br>
+👤 {{o[1]}}<br><br>
+🍽️ {{o[2]}}<br><br>
+
+<div class="status 
+{% if o[5]=='Pendente' %}pending{% endif %}
+{% if o[5]=='Preparando' %}preparing{% endif %}
+{% if o[5]=='Concluído' %}done{% endif %}
+{% if o[5]=='Entregando' %}delivering{% endif %}
+">
+{{o[5]}}
+</div>
+
+<button class="yellow" onclick="update({{o[0]}},'Preparando')">Preparar</button>
+<button class="green" onclick="update({{o[0]}},'Concluído')">Concluir</button>
+<button class="orange" onclick="update({{o[0]}},'Entregando')">🚚 Entregar</button>
+
+<button class="blue" onclick="confirmOrder({{o[0]}})">📲 Confirmar Cliente</button>
+
+<button class="red" onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
+<button onclick="window.open('/send_whatsapp/{{o[0]}}')">📲 WhatsApp</button>
+</div>
+{% endfor %}
+</div>
+
+<h2>✅ Concluídos</h2>
+<div class="grid">
+{% for o in done %}
+<div class="order">
+<b>Mesa {{o[4]}}</b><br>
+👤 {{o[1]}}<br><br>
+🍽️ {{o[2]}}<br>
+
+<div class="status done">Concluído</div>
+
+<button onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
+<button onclick="window.open('/send_whatsapp/{{o[0]}}')">📲</button>
+</div>
+{% endfor %}
+</div>
 
 <script>
-function load(){
-fetch("/orders_json")
-.then(r=>r.json())
-.then(data=>{
-let html="";
-data.forEach(o=>{
-html+=`
-<div style="border:1px solid #ccc;padding:10px;margin:10px">
-Mesa ${o.table}<br>
-${o.name}<br>
-${o.items}<br>
-Status: ${o.status}<br>
-
-<button onclick="update(${o.id},'Preparando')">Preparar</button>
-<button onclick="update(${o.id},'Concluído')">Concluir</button>
-<button onclick="update(${o.id},'Entregando')">🚚</button>
-<button onclick="confirmOrder(${o.id})">Confirmar</button>
-<button onclick="window.open('/send_whatsapp/${o.id}')">WhatsApp</button>
-</div>`;
-});
-document.getElementById("orders").innerHTML=html;
-});
-}
-
 function update(id,status){
+
+let msg="";
+if(status=="Preparando"){msg="Pedido em preparação";}
+if(status=="Concluído"){msg="Pedido concluído";}
+if(status=="Entregando"){msg="Pedido a caminho da mesa";}
+
 fetch("/update_status",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({id:id,status:status})
-}).then(()=>load());
+}).then(()=>{
+alert(msg);
+location.reload();
+});
 }
 
 function confirmOrder(id){
-fetch("/confirm_order/"+id).then(()=>alert("Cliente notificado"));
+fetch("/confirm_order/"+id).then(()=>{
+alert("Cliente notificado");
+});
 }
-
-setInterval(load,3000);
-load();
 </script>
-""")
+""", active=active, done=done)
 
 # ---------------- CONFIRM ----------------
 @app.route("/confirm_order/<int:id>")
@@ -358,6 +415,15 @@ Status {o[5]}
     url = "https://wa.me/" + phone + "?text=" + urllib.parse.quote(msg)
     return redirect(url)
 
+---------------- CUSTOMER CONFIRM ORDER ----------------
+@app.route("/confirm_order/<int:id>")
+def confirm_order(id):
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    c.execute("UPDATE orders SET status='Confirmado pelo Cliente' WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
+    return "ok"
 # ---------------- RUN ----------------
 if __name__=="__main__":
     app.run()
