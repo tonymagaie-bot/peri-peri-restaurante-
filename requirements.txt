@@ -1,5 +1,5 @@
 flask
-gunicorn -keventlet-w 1 app:app
+gunicorn -keventlet-w1
 qrcode
 pillow
 flask-socketio
