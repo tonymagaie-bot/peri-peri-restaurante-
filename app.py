@@ -204,11 +204,13 @@ button:active{
 let cart=[];let total=0;
 
 function add(n,p){
-cart.push(n);
-total+=p;
-document.getElementById("cart").innerHTML+="<li>"+n+"</li>";
-document.getElementById("total").innerText=total+" MZN";
-alert(n + " adicionado!");
+    cart.push(n);
+    total+=p;
+
+    document.getElementById("cart").innerHTML =
+        cart.map(i=>"<li>"+i+"</li>").join("");
+
+    document.getElementById("total").innerText = total+" MZN";
 }
 
 function order(){
