@@ -248,7 +248,7 @@ def order():
 
     c.execute("INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
               (d["name"],str(d["items"]),d["total"],d["table"],
-               "Pendente",datetime.now().strftime("%d-%m-%Y %H:%M"),
+               "Pendente",datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M"),
                d.get("phone","")))
 
     oid=c.lastrowid
