@@ -4,4 +4,4 @@ eventlet-w
 qrcode
 pillow
 flask-socketio
-eventlet
+
