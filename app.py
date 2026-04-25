@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string, redirect, send_file
+from flask import Flask, request, jsonify, render_template_string, redirect, send_file, session
 import sqlite3
 from datetime import datetime
 import qrcode
@@ -6,6 +6,11 @@ from io import BytesIO
 import urllib.parse
 
 app = Flask(__name__)
+
+# 🔐 ADMIN CONFIG
+app.secret_key = "supersecret123"
+ADMIN_USER = "admin"
+ADMIN_PASS = "1234"
 
 NAME = "Peri Peri 🌶️"
 
@@ -59,6 +64,26 @@ def ensure_phone_column():
     conn.close()
 
 ensure_phone_column()
+
+# ---------------- ADMIN LOGIN ----------------
+@app.route("/admin", methods=["GET","POST"])
+def admin():
+    if request.method == "POST":
+        u = request.form.get("user")
+        p = request.form.get("pass")
+
+        if u == ADMIN_USER and p == ADMIN_PASS:
+            session["admin"] = True
+            return redirect("/kitchen")
+
+    return render_template_string("""
+    <h2>🔐 Admin Login</h2>
+    <form method="post">
+        <input name="user" placeholder="User"><br><br>
+        <input name="pass" placeholder="Password" type="password"><br><br>
+        <button>Login</button>
+    </form>
+    """)
 
 # ---------------- CUSTOMER UI ----------------
 @app.route("/")
@@ -175,111 +200,123 @@ def track(id):
     conn.close()
 
     return render_template_string("""
-<style>
-body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:20px}
-.box{background:#1c1c1c;padding:20px;border-radius:12px}
-</style>
-
 <h1>📦 Pedido</h1>
-
-<div class="box">
-<p><b>Nome:</b> {{o[1]}}</p>
-<p><b>Mesa:</b> {{o[4]}}</p>
-<p><b>Status:</b> {{o[5]}}</p>
-<p><b>Data:</b> {{o[6]}}</p>
-</div>
-
-<button onclick="window.location='/?table={{o[4]}}'">⬅ Voltar</button>
+<p>Status: {{o[5]}}</p>
+<script>
+setInterval(()=>{
+location.reload();
+},4000);
+</script>
 """, o=o)
+
+# ---------------- LIVE DATA ----------------
+@app.route("/orders_json")
+def orders_json():
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    rows = c.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
+    conn.close()
+
+    data=[]
+    for o in rows:
+        data.append({
+            "id":o[0],
+            "name":o[1],
+            "items":o[2],
+            "total":o[3],
+            "table":o[4],
+            "status":o[5]
+        })
+
+    return jsonify(data)
 
 # ---------------- KITCHEN ----------------
 @app.route("/kitchen")
 def kitchen():
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
 
-    active=c.execute("SELECT * FROM orders WHERE status!='Concluído' ORDER BY id DESC").fetchall()
-    done=c.execute("SELECT * FROM orders WHERE status='Concluído' ORDER BY id DESC LIMIT 20").fetchall()
-
-    conn.close()
+    if not session.get("admin"):
+        return redirect("/admin")
 
     return render_template_string("""
-<style>
-body{background:#0b0b0b;color:white;font-family:Arial;padding:15px}
-h1{text-align:center;color:#ffcc00;font-size:42px}
-h2{font-size:28px;margin-top:30px;border-left:6px solid #ff3b3b;padding-left:10px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:15px}
-.order{background:#1a1a1a;padding:20px;border-radius:15px;font-size:22px}
-.status{padding:10px;border-radius:10px;font-weight:bold;text-align:center}
-.pending{background:#ffc107;color:black}
-.preparing{background:#17a2b8}
-.done{background:#28a745}
-button{margin:8px;padding:12px;border:none;border-radius:8px;font-size:18px}
-.yellow{background:#ffc107}
-.green{background:#28a745;color:white}
-.red{background:#dc3545;color:white}
-</style>
+<h1>🍹 Cozinha (Live)</h1>
 
-<h1>🍹 Bar e Cozinha</h1>
+<a href="/sales"><button>📊 Vendas</button></a>
 
-<h2>📌 Ativos</h2>
-<div class="grid">
-{% for o in active %}
-<div class="order">
-<b style="font-size:26px;">Mesa {{o[4]}}</b><br>
-👤 {{o[1]}}<br><br>
-🍽️ {{o[2]}}<br><br>
-
-<div class="status 
-{% if o[5]=='Pendente' %}pending{% endif %}
-{% if o[5]=='Preparando' %}preparing{% endif %}
-{% if o[5]=='Concluído' %}done{% endif %}
-">
-{{o[5]}}
-</div>
-
-<button class="yellow" onclick="update({{o[0]}},'Preparando')">Preparar</button>
-<button class="green" onclick="update({{o[0]}},'Concluído')">Concluir</button>
-<button class="red" onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
-<button onclick="window.open('/send_whatsapp/{{o[0]}}')">📲 WhatsApp</button>
-</div>
-{% endfor %}
-</div>
-
-<h2>✅ Concluídos</h2>
-<div class="grid">
-{% for o in done %}
-<div class="order">
-<b>Mesa {{o[4]}}</b><br>
-👤 {{o[1]}}<br><br>
-🍽️ {{o[2]}}<br>
-<div class="status done">Concluído</div>
-<button onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
-<button onclick="window.open('/send_whatsapp/{{o[0]}}')">📲</button>
-</div>
-{% endfor %}
-</div>
+<div id="orders"></div>
 
 <script>
+function load(){
+fetch("/orders_json")
+.then(r=>r.json())
+.then(data=>{
+let html="";
+data.forEach(o=>{
+html+=`
+<div style="border:1px solid #ccc;padding:10px;margin:10px">
+Mesa ${o.table}<br>
+${o.name}<br>
+${o.items}<br>
+Status: ${o.status}<br>
+
+<button onclick="update(${o.id},'Preparando')">Preparar</button>
+<button onclick="update(${o.id},'Concluído')">Concluir</button>
+<button onclick="update(${o.id},'Entregando')">🚚</button>
+<button onclick="confirmOrder(${o.id})">Confirmar</button>
+<button onclick="window.open('/send_whatsapp/${o.id}')">WhatsApp</button>
+</div>`;
+});
+document.getElementById("orders").innerHTML=html;
+});
+}
+
 function update(id,status){
-
-let msg="";
-if(status=="Preparando"){msg="Pedido em preparação";}
-if(status=="Concluído"){msg="Pedido concluído";}
-
 fetch("/update_status",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({id:id,status:status})
-}).then(()=>{
-alert(msg);
-location.reload();
-});
+}).then(()=>load());
 }
-</script>
-""", active=active, done=done)
 
-# ---------------- UPDATE STATUS ----------------
+function confirmOrder(id){
+fetch("/confirm_order/"+id).then(()=>alert("Cliente notificado"));
+}
+
+setInterval(load,3000);
+load();
+</script>
+""")
+
+# ---------------- CONFIRM ----------------
+@app.route("/confirm_order/<int:id>")
+def confirm_order(id):
+    conn=sqlite3.connect("restaurant.db")
+    c=conn.cursor()
+    c.execute("UPDATE orders SET status='Confirmado pelo Cliente' WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
+    return "ok"
+
+# ---------------- SALES ----------------
+@app.route("/sales")
+def sales():
+    if not session.get("admin"):
+        return redirect("/admin")
+
+    conn=sqlite3.connect("restaurant.db")
+    c=conn.cursor()
+    rows=c.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
+    conn.close()
+
+    return render_template_string("""
+<h1>📊 Vendas</h1>
+{% for o in rows %}
+<div>
+Mesa {{o[4]}} - {{o[1]}} - {{o[3]}} MZN - {{o[5]}}
+</div>
+{% endfor %}
+""", rows=rows)
+
+# ---------------- UPDATE ----------------
 @app.route("/update_status", methods=["POST"])
 def update_status():
     d=request.json
@@ -290,48 +327,6 @@ def update_status():
     conn.close()
     return jsonify(ok=True)
 
-# ---------------- RECEIPT ----------------
-@app.route("/receipt_any/<int:id>")
-def receipt_any(id):
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
-    conn.close()
-
-    return render_template_string("""
-<body onload="window.print()">
-<h2>🌶️ Peri Peri</h2>
-<p>Nome: {{o[1]}}</p>
-<p>Mesa: {{o[4]}}</p>
-<p>Status: {{o[5]}}</p>
-<p>Itens: {{o[2]}}</p>
-<p>Total: {{o[3]}} MZN</p>
-<p>{{o[6]}}</p>
-</body>
-""", o=o)
-
-# ---------------- QR ----------------
-@app.route("/qr/<int:table>")
-def qr(table):
-    url = request.host_url + "?table=" + str(table)
-    img = qrcode.make(url)
-    buf = BytesIO()
-    img.save(buf)
-    buf.seek(0)
-    return send_file(buf, mimetype="image/png")
-
-@app.route("/qr_tables")
-def qr_tables():
-    return render_template_string("""
-<h1>📱 QR Codes Mesas</h1>
-{% for i in range(1,11) %}
-<div>
-<h3>Mesa {{i}}</h3>
-<img src="/qr/{{i}}" width="200">
-</div>
-{% endfor %}
-""")
-
 # ---------------- WHATSAPP ----------------
 @app.route("/send_whatsapp/<int:id>")
 def send_whatsapp(id):
@@ -340,40 +335,27 @@ def send_whatsapp(id):
     o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
     conn.close()
 
-    phone = ""
-    try:
-        phone = o[7]
-    except:
-        pass
+    phone = o[7] if len(o) > 7 else ""
 
     if not phone:
-        return "<h3>❌ Cliente não forneceu WhatsApp</h3>"
+        return "No phone"
 
-    # CLEAN NUMBER
     phone = phone.strip().replace(" ", "").replace("+", "")
 
-    # AUTO ADD MOZAMBIQUE CODE 258
     if not phone.startswith("258"):
         phone = "258" + phone
 
     msg = f"""
-🌶️ Peri Peri
+Peri Peri
 
-Nome: {o[1]}
-Mesa: {o[4]}
+Mesa {o[4]}
+{ o[2] }
 
-Itens:
-{o[2]}
-
-Total: {o[3]} MZN
-Status: {o[5]}
-Data: {o[6]}
-
-Obrigado pela preferência!
+Total {o[3]} MZN
+Status {o[5]}
 """
 
     url = "https://wa.me/" + phone + "?text=" + urllib.parse.quote(msg)
-
     return redirect(url)
 
 # ---------------- RUN ----------------
