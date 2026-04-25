@@ -2,3 +2,5 @@ flask
 gunicorn
 qrcode
 pillow
+flask socketio
+eventlet
