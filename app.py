@@ -497,7 +497,7 @@ def send_whatsapp(id):
     if not phone:
         return "<h3>❌ Cliente não forneceu WhatsApp</h3>"
 
-    # تنظيف الرقم
+# تنظيف الرقم
 phone = phone.replace(" ", "").replace("+", "")
 
 # adicionar código de Moçambique se não existir
