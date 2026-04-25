@@ -2,5 +2,5 @@ flask
 gunicorn
 qrcode
 pillow
-flask socketio
+flask-socketio
 eventlet
