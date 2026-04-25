@@ -293,21 +293,75 @@ def kitchen():
 
     return render_template_string("""
 <style>
-body{background:#0b0b0b;color:white;font-family:Arial;padding:15px}
-h1{text-align:center;color:#ffcc00;font-size:42px}
-h2{font-size:28px;margin-top:30px;border-left:6px solid #ff3b3b;padding-left:10px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:15px}
-.order{background:#1a1a1a;padding:20px;border-radius:15px;font-size:22px}
-.status{padding:10px;border-radius:10px;font-weight:bold;text-align:center}
+body{
+    background:#050505;
+    color:white;
+    font-family:system-ui;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    color:#ffcc00;
+    font-size:46px;
+    margin-bottom:20px;
+}
+
+h2{
+    font-size:30px;
+    margin-top:40px;
+    border-left:6px solid #ff4d4d;
+    padding-left:12px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    gap:20px;
+}
+
+.order{
+    background:#121212;
+    padding:22px;
+    border-radius:18px;
+    font-size:22px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.6);
+}
+
+.order b{
+    font-size:28px;
+}
+
+.status{
+    padding:12px;
+    border-radius:12px;
+    font-weight:bold;
+    text-align:center;
+    margin:12px 0;
+    font-size:18px;
+}
+
 .pending{background:#ffc107;color:black}
-.preparing{background:#17a2b8}
+.preparing{background:#00bcd4}
 .done{background:#28a745}
-button{margin:8px;padding:12px;border:none;border-radius:8px;font-size:18px}
+
+button{
+    margin:6px;
+    padding:12px 16px;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:bold;
+}
+
 .yellow{background:#ffc107}
 .green{background:#28a745;color:white}
 .red{background:#dc3545;color:white}
-</style>
 
+button:active{
+    transform:scale(0.95);
+}
+</style>
 <h1>🍹 Bar e Cozinha</h1>
 
 <h2>📌 Ativos</h2>
@@ -364,6 +418,9 @@ alert(msg);
 location.reload();
 });
 }
+</script>
+<script>
+setInterval(()=>location.reload(), 5000);
 </script>
 """, active=active, done=done)
 
