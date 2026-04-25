@@ -415,7 +415,7 @@ Status {o[5]}
     url = "https://wa.me/" + phone + "?text=" + urllib.parse.quote(msg)
     return redirect(url)
 
----------------- CUSTOMER CONFIRM ORDER ----------------
+# ---------------- CUSTOMER CONFIRM ORDER ----------------
 @app.route("/confirm_order/<int:id>")
 def confirm_order(id):
     conn = sqlite3.connect("restaurant.db")
