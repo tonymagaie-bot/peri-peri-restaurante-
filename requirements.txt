@@ -1,6 +1,6 @@
 flask
-gunicorn -k
-eventlet-w
+gunicorn
+eventlet
 qrcode
 pillow
 flask-socketio
