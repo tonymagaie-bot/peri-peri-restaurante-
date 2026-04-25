@@ -7,7 +7,7 @@ import urllib.parse
 
 app = Flask(name)
 
-🔐 ADMIN CONFIG
+ADMIN CONFIG
 
 app.secret_key = "supersecret123"
 ADMIN_USER = "admin"
