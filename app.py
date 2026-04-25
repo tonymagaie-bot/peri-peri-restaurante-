@@ -72,13 +72,101 @@ def menu():
 
     return render_template_string("""
 <style>
-body{background:#0f0f0f;color:#fff;font-family:Arial;padding:20px;font-size:18px}
-h1{text-align:center;color:#ff3b3b;font-size:36px}
-h2{border-left:6px solid #ff3b3b;padding-left:10px;margin-top:25px}
-.card{background:#1c1c1c;padding:15px;margin:12px 0;border-radius:12px;display:flex;justify-content:space-between;align-items:center}
-button{background:#ff3b3b;color:#fff;border:none;padding:12px 18px;border-radius:10px;font-size:18px}
-input{width:100%;padding:14px;margin-bottom:10px;border-radius:10px;font-size:16px}
-.cart-box{position:fixed;bottom:0;left:0;width:100%;background:#000;padding:15px;border-top:2px solid #ff3b3b}
+body{
+    background:#0a0a0a;
+    color:#fff;
+    font-family:system-ui;
+    padding:18px;
+    font-size:20px;
+}
+
+h1{
+    text-align:center;
+    color:#ff4d4d;
+    font-size:42px;
+    margin-bottom:10px;
+}
+
+h2{
+    border-left:6px solid #ff4d4d;
+    padding-left:12px;
+    margin-top:30px;
+    font-size:28px;
+}
+
+input{
+    width:100%;
+    padding:18px;
+    margin-bottom:12px;
+    border-radius:12px;
+    border:none;
+    font-size:18px;
+    background:#1c1c1c;
+    color:#fff;
+}
+
+.card{
+    background:#161616;
+    padding:20px;
+    margin:14px 0;
+    border-radius:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 4px 15px rgba(0,0,0,0.5);
+}
+
+.card div{
+    font-size:22px;
+}
+
+.card small{
+    font-size:16px;
+    color:#aaa;
+}
+
+button{
+    background:#ff4d4d;
+    color:#fff;
+    border:none;
+    padding:14px 22px;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+button:active{
+    transform:scale(0.96);
+}
+
+.cart-box{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    background:#111;
+    padding:18px;
+    border-top:3px solid #ff4d4d;
+}
+
+.cart-box h3{
+    margin:5px 0;
+}
+
+#cart li{
+    font-size:18px;
+}
+
+#total{
+    font-size:26px;
+    color:#00ff88;
+}
+
+.cart-box button{
+    width:100%;
+    font-size:20px;
+    margin-top:10px;
+}
 </style>
 
 <h1>🌶️ {{name}}</h1>
