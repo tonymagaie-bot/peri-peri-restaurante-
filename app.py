@@ -72,17 +72,19 @@ def menu():
 
     return render_template_string("""
 <style>
-body{background:#0f0f0f;color:#fff;font-family:Arial;padding:15px}
-h1{text-align:center;color:#ff3b3b}
-h2{border-left:4px solid #ff3b3b;padding-left:10px}
-.card{background:#1c1c1c;padding:12px;margin:10px 0;border-radius:12px;display:flex;justify-content:space-between}
-button{background:#ff3b3b;color:#fff;border:none;padding:8px;border-radius:8px}
-input{width:100%;padding:10px;margin-bottom:10px;border-radius:8px}
+body{background:#0f0f0f;color:#fff;font-family:Arial;padding:20px;font-size:18px}
+h1{text-align:center;color:#ff3b3b;font-size:36px}
+h2{border-left:6px solid #ff3b3b;padding-left:10px;margin-top:25px}
+.card{background:#1c1c1c;padding:15px;margin:12px 0;border-radius:12px;display:flex;justify-content:space-between;align-items:center}
+button{background:#ff3b3b;color:#fff;border:none;padding:12px 18px;border-radius:10px;font-size:18px}
+input{width:100%;padding:14px;margin-bottom:10px;border-radius:10px;font-size:16px}
+.cart-box{position:fixed;bottom:0;left:0;width:100%;background:#000;padding:15px;border-top:2px solid #ff3b3b}
 </style>
 
 <h1>🌶️ {{name}}</h1>
 
-<p>Mesa {{table}}</p>
+<p><b>Mesa {{table}}</b></p>
+
 <input id="name" placeholder="Seu nome">
 <input id="phone" placeholder="WhatsApp (opcional)">
 
@@ -90,7 +92,7 @@ input{width:100%;padding:10px;margin-bottom:10px;border-radius:8px}
 {% for i in items if i[3]=='food' %}
 <div class="card">
 <div>{{i[1]}}<br><small>{{i[2]}} MZN</small></div>
-<button onclick="add('{{i[1]}}',{{i[2]}})">+</button>
+<button onclick="add('{{i[1]}}',{{i[2]}})">Adicionar</button>
 </div>
 {% endfor %}
 
@@ -98,15 +100,17 @@ input{width:100%;padding:10px;margin-bottom:10px;border-radius:8px}
 {% for i in items if i[3]=='drink' %}
 <div class="card">
 <div>{{i[1]}}<br><small>{{i[2]}} MZN</small></div>
-<button onclick="add('{{i[1]}}',{{i[2]}})">+</button>
+<button onclick="add('{{i[1]}}',{{i[2]}})">Adicionar</button>
 </div>
 {% endfor %}
 
+<div class="cart-box">
 <h3>🍽️ Bandeja</h3>
 <ul id="cart"></ul>
 <h3 id="total">0 MZN</h3>
 
-<button style="width:100%;padding:12px" onclick="order()">📦 Enviar Pedido</button>
+<button style="width:100%" onclick="order()">📦 Enviar Pedido</button>
+</div>
 
 <script>
 let cart=[];let total=0;
@@ -116,9 +120,15 @@ cart.push(n);
 total+=p;
 document.getElementById("cart").innerHTML+="<li>"+n+"</li>";
 document.getElementById("total").innerText=total+" MZN";
+alert(n + " adicionado!");
 }
 
 function order(){
+if(cart.length==0){
+alert("Carrinho vazio!");
+return;
+}
+
 fetch("/order",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
@@ -130,6 +140,7 @@ total:total,
 table:"{{table}}"
 })
 }).then(r=>r.json()).then(d=>{
+alert("Pedido enviado!");
 window.location="/track/"+d.id;
 });
 }
@@ -251,16 +262,77 @@ button{margin:8px;padding:12px;border:none;border-radius:8px;font-size:18px}
 
 <script>
 function update(id,status){
+
+let msg="";
+if(status=="Preparando"){msg="Pedido em preparação";}
+if(status=="Concluído"){msg="Pedido concluído";}
+
 fetch("/update_status",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({id:id,status:status})
-}).then(()=>location.reload());
+}).then(()=>{
+alert(msg);
+location.reload();
+});
 }
 </script>
 """, active=active, done=done)
 
-# ---------------- WHATSAPP SEND ----------------
+# ---------------- UPDATE STATUS ----------------
+@app.route("/update_status", methods=["POST"])
+def update_status():
+    d=request.json
+    conn=sqlite3.connect("restaurant.db")
+    c=conn.cursor()
+    c.execute("UPDATE orders SET status=? WHERE id=?", (d["status"],d["id"]))
+    conn.commit()
+    conn.close()
+    return jsonify(ok=True)
+
+# ---------------- RECEIPT ----------------
+@app.route("/receipt_any/<int:id>")
+def receipt_any(id):
+    conn=sqlite3.connect("restaurant.db")
+    c=conn.cursor()
+    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+    conn.close()
+
+    return render_template_string("""
+<body onload="window.print()">
+<h2>🌶️ Peri Peri</h2>
+<p>Nome: {{o[1]}}</p>
+<p>Mesa: {{o[4]}}</p>
+<p>Status: {{o[5]}}</p>
+<p>Itens: {{o[2]}}</p>
+<p>Total: {{o[3]}} MZN</p>
+<p>{{o[6]}}</p>
+</body>
+""", o=o)
+
+# ---------------- QR ----------------
+@app.route("/qr/<int:table>")
+def qr(table):
+    url = request.host_url + "?table=" + str(table)
+    img = qrcode.make(url)
+    buf = BytesIO()
+    img.save(buf)
+    buf.seek(0)
+    return send_file(buf, mimetype="image/png")
+
+@app.route("/qr_tables")
+def qr_tables():
+    return render_template_string("""
+<h1>📱 QR Codes Mesas</h1>
+{% for i in range(1,11) %}
+<div>
+<h3>Mesa {{i}}</h3>
+<img src="/qr/{{i}}" width="200">
+</div>
+{% endfor %}
+""")
+
+# ---------------- WHATSAPP ----------------
 @app.route("/send_whatsapp/<int:id>")
 def send_whatsapp(id):
     conn = sqlite3.connect("restaurant.db")
@@ -277,7 +349,12 @@ def send_whatsapp(id):
     if not phone:
         return "<h3>❌ Cliente não forneceu WhatsApp</h3>"
 
-    phone = phone.replace(" ", "").replace("+", "")
+    # CLEAN NUMBER
+    phone = phone.strip().replace(" ", "").replace("+", "")
+
+    # AUTO ADD MOZAMBIQUE CODE 258
+    if not phone.startswith("258"):
+        phone = "258" + phone
 
     msg = f"""
 🌶️ Peri Peri
@@ -292,10 +369,11 @@ Total: {o[3]} MZN
 Status: {o[5]}
 Data: {o[6]}
 
-Obrigado!
+Obrigado pela preferência!
 """
 
     url = "https://wa.me/" + phone + "?text=" + urllib.parse.quote(msg)
+
     return redirect(url)
 
 # ---------------- RUN ----------------
