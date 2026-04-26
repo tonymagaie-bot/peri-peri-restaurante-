@@ -354,8 +354,6 @@ def kitchen():
 
     return render_template_string(""" ... your HTML unchanged ... """,
         active=active,
-        done=done
-                                 )
 <style>
 body{
     background:#050505;
