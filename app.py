@@ -492,7 +492,7 @@ def kitchen():
         })
 
     return result
-
+    
     active = process_orders(raw_active)
     done = process_orders(raw_done)
 
