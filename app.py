@@ -227,48 +227,53 @@ button:active{
 </div>
 
 <script>
+let cart = [];
+let total = 0;
+
+function add(n, p){
+    cart.push(n);
+    total += p;
+
+    document.getElementById("cart").innerHTML =
+        cart.map(i => "<li>" + i + "</li>").join("");
+
+    document.getElementById("total").innerText = total + " MZN";
+}
+
+function order(){
+    if(cart.length == 0){
+        alert("Carrinho vazio!");
+        return;
+    }
+
+    fetch("/order", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            name: document.getElementById("name").value,
+            phone: document.getElementById("phone").value,
+            items: cart,
+            total: total,
+            table: "{{table}}"
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        alert("Pedido enviado!");
+        localStorage.setItem("lastOrderId", d.id);  // ✅ SAVE ID
+        window.location = "/track/" + d.id;
+    });
+}
+
+// ✅ BUTTON TO RETURN TO TRACK PAGE
 function goTrack(){
-    let id = localStorage.getItem("last_order_id");
+    let id = localStorage.getItem("lastOrderId");
 
     if(id){
         window.location = "/track/" + id;
     }else{
         alert("Nenhum pedido encontrado!");
     }
-}
-let cart=[];let total=0;
-
-function add(n,p){
-    cart.push(n);
-    total+=p;
-
-    document.getElementById("cart").innerHTML =
-        cart.map(i=>"<li>"+i+"</li>").join("");
-
-    document.getElementById("total").innerText = total+" MZN";
-}
-
-function order(){
-if(cart.length==0){
-alert("Carrinho vazio!");
-return;
-}
-
-fetch("/order",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-name:document.getElementById("name").value,
-phone:document.getElementById("phone").value,
-items:cart,
-total:total,
-table:"{{table}}"
-})
-}).then(r=>r.json()).then(d=>{
-alert("Pedido enviado!");
-localStorage.setItem("lastOrderId", d.id);
-window.location="/track/"+d.id;
-});
 }
 </script>
 """, items=items, name=NAME, table=table)
