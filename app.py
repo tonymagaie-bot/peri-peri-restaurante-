@@ -287,7 +287,7 @@ def order():
 
     # 🔹 Insert order
     c.execute(
-        "INSERT INTO orders VALUES (NULL,?,?,?,?,?,?)",
+        "INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
 (
     d["name"],
     json.dumps(items_with_category),
@@ -512,6 +512,23 @@ body:JSON.stringify({id:id,status:status})
 
 """, active=active, done=done)
 
+# ---------------- UPDATE STATUS ----------------
+@app.route("/update_status", methods=["POST"])
+def update_status():
+    d = request.json
+
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+
+    c.execute(
+        "UPDATE orders SET status=? WHERE id=?",
+        (d["status"], d["id"])
+    )
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"ok": True})
 # ---------------- QR ----------------
 @app.route("/qr/<int:table>")
 def qr(table):
