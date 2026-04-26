@@ -480,7 +480,7 @@ def qr_tables():
 {% endfor %}
 """)
 
-# ---------------- WHATSAPP ----------------
+# ---------------- WHATSAPP ---------------
 @app.route("/send_whatsapp/<int:id>")
 def send_whatsapp(id):
     conn = sqlite3.connect("restaurant.db")
@@ -497,13 +497,14 @@ def send_whatsapp(id):
     if not phone:
         return "<h3>❌ Cliente não forneceu WhatsApp</h3>"
 
-# phone = phone.replace(" ", "").replace("+", "")
+    # limpar número
+    phone = phone.replace(" ", "").replace("+", "")
 
-# adicionar código de Moçambique se não existir
-if phone.startswith("0"):
-    phone = "258" + phone[1:]
-elif not phone.startswith("258"):
-    phone = "258" + phone
+    # adicionar código de Moçambique
+    if phone.startswith("0"):
+        phone = "258" + phone[1:]
+    elif not phone.startswith("258"):
+        phone = "258" + phone
 
     msg = f"""
 🌶️ Peri Peri
@@ -523,7 +524,6 @@ Obrigado!
 
     url = "https://wa.me/" + phone + "?text=" + urllib.parse.quote(msg)
     return redirect(url)
-
 # ---------------- RUN ----------------
 if __name__=="__main__":
     app.run()
