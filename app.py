@@ -469,8 +469,8 @@ def kitchen():
     raw_done = c.execute(
         "SELECT * FROM orders WHERE status='Concluído' ORDER BY id DESC LIMIT 20"
     ).fetchall()
-    
-    def process_orders(rows):
+
+def process_orders(rows):
     result = []
 
     for o in rows:
@@ -493,7 +493,6 @@ def kitchen():
         })
 
     return result
-    
     active = process_orders(raw_active)
     done = process_orders(raw_done)
 
