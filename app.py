@@ -296,7 +296,7 @@ def order():
     "Pendente",
     datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M")
 )
-    )
+    )  
     oid = c.lastrowid
     conn.commit()
     conn.close()
