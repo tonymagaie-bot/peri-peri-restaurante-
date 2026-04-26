@@ -254,6 +254,7 @@ table:"{{table}}"
 })
 }).then(r=>r.json()).then(d=>{
 alert("Pedido enviado!");
+localStorage.setItem("lastOrderId", d.id);
 window.location="/track/"+d.id;
 });
 }
