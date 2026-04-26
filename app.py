@@ -383,8 +383,8 @@ function confirmChoice(choice){
 }
 </script>
 
-<button onclick="window.location='/?table={{o[4]}}'">Voltar</button>
-<button onclick="window.location='/track/{{o[0]}}'">Ver Pedido</button>
+<button onclick="window.location='/?table={{o[4]}}'">Novo Pedido</button>
+<button onclick="window.location='/track/{{o[0]}}'">Consultar</button>
 
 """, o=o)
 # ---------------- CLIENT CONFIRM ----------------
