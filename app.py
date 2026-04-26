@@ -312,8 +312,8 @@ def track(id):
     c = conn.cursor()
     o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
     conn.close()
-
-    return render_template_string("""
+    
+return render_template_string("""
 <style>
 body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:20px}
 .box{background:#1c1c1c;padding:20px;border-radius:12px}
@@ -339,19 +339,18 @@ button{
 {% if o[5] == "Aguardando Confirmação" %}
     <h2>Posso preparar o seu pedido?</h2>
 
-    <button class="yes" onclick="confirmChoice('yes')">✅ Sim</button>
-    <button class="no" onclick="confirmChoice('no')">❌ Não</button>
+    <button class="yes" onclick="confirmChoice('yes')">Sim</button>
+    <button class="no" onclick="confirmChoice('no')">Não</button>
 
 {% elif o[5] == "Cancelado" %}
-    <h2 style="color:#dc3545;">❌ Pedido cancelado</h2>
+    <h2 style="color:#dc3545;">Pedido cancelado</h2>
 
 {% elif o[5] == "Preparando" %}
-    <h2 style="color:#007bff;">👨‍🍳 Em preparação...</h2>
+    <h2 style="color:#007bff;">Em preparação...</h2>
 
 {% elif o[5] == "Concluído" %}
-    <h2 style="color:#28a745;">✅ Pronto!</h2>
+    <h2 style="color:#28a745;">Pronto!</h2>
 {% endif %}
-
 </div>
 
 <script>
@@ -367,11 +366,11 @@ function confirmChoice(choice){
 }
 </script>
 
-<button onclick="window.location='/?table={{o[4]}}'">⬅ Voltar</button>
+<button onclick="window.location='/?table={{o[4]}}'">Voltar</button>
+<button onclick="window.location='/track/{{o[0]}}'">Ver Pedido</button>
 
-<button onclick="window.location='/track/{{o[0]}}'" style="width:100%;margin-top:10px;">
-📦 Voltar ao Pedido
-</button>
+""", o=o)
+    
 
 # ---------------- CLIENT CONFIRM ----------------
 @app.route("/client_confirm", methods=["POST"])
