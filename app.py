@@ -313,7 +313,7 @@ def track(id):
     o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
     conn.close()
     
-return render_template_string("""
+    return render_template_string("""
 <style>
 body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:20px}
 .box{background:#1c1c1c;padding:20px;border-radius:12px}
@@ -370,7 +370,6 @@ function confirmChoice(choice){
 <button onclick="window.location='/track/{{o[0]}}'">Ver Pedido</button>
 
 """, o=o)
-    
 # ---------------- CLIENT CONFIRM ----------------
 @app.route("/client_confirm", methods=["POST"])
 def client_confirm():
