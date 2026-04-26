@@ -537,7 +537,9 @@ button:active{
 {{o.status}}
 </div>
 
-<button class="yellow" onclick="update({{o.id}},'Preparando')">Preparar</button>
+<button class="yellow" onclick="update({{o.id}},'Aguardando Confirmação')">
+Confirmar Pedido
+</button>
 <button class="green" onclick="update({{o.id}},'Concluído')">Concluir</button>
 <button class="red" onclick="window.open('/receipt_any/{{o.id}}')">🧾</button>
 <button onclick="window.open('/send_whatsapp/{{o.id}}')">📲 WhatsApp</button>
