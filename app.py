@@ -369,6 +369,9 @@ function confirmChoice(choice){
 
 <button onclick="window.location='/?table={{o[4]}}'">⬅ Voltar</button>
 """, o=o)
+<button id="trackBtn" style="width:100%;margin-top:10px;display:none;">
+📦 Ver último pedido
+</button>
 
 # ---------------- CLIENT CONFIRM ----------------
 @app.route("/client_confirm", methods=["POST"])
