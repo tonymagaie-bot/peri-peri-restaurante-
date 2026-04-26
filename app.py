@@ -389,38 +389,23 @@ h1{
     margin-bottom:20px;
 }
 
-h2{
-    font-size:30px;
-    margin-top:40px;
-    border-left:6px solid #ff4d4d;
-    padding-left:12px;
-}
-
 .grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
     gap:20px;
 }
 
 .order{
     background:#121212;
-    padding:22px;
-    border-radius:18px;
-    font-size:22px;
-    box-shadow:0 6px 20px rgba(0,0,0,0.6);
-}
-
-.order b{
-    font-size:28px;
+    padding:18px;
+    border-radius:14px;
 }
 
 .status{
-    padding:12px;
-    border-radius:12px;
-    font-weight:bold;
+    padding:10px;
+    border-radius:10px;
     text-align:center;
-    margin:12px 0;
-    font-size:18px;
+    font-weight:bold;
 }
 
 .pending{background:#ffc107;color:black}
@@ -428,60 +413,52 @@ h2{
 .done{background:#28a745}
 
 button{
-    margin:6px;
-    padding:12px 16px;
+    margin:5px;
+    padding:10px;
     border:none;
-    border-radius:10px;
-    font-size:16px;
+    border-radius:8px;
     font-weight:bold;
 }
 
 .yellow{background:#ffc107}
 .green{background:#28a745;color:white}
 .red{background:#dc3545;color:white}
-
-button:active{
-    transform:scale(0.95);
-}
 </style>
-<h1>🍹 Bar e Cozinha</h1>
 
-<h2>📌 Ativos</h2>
+<h1>🍹 Kitchen Dashboard</h1>
+
+<h2>📌 Active Orders</h2>
 <div class="grid">
 {% for o in active %}
 <div class="order">
-<b style="font-size:26px;">Mesa {{o[4]}}</b><br>
-👤 {{o[1]}}<br><br>
-{% if o.food %}
-<div>
-<b>🍳 Comida:</b><br>
-{% for f in o.food %}
-• {{f}}<br>
-{% endfor %}
-</div>
-{% endif %}
 
-{% if o.drinks %}
-<div style="margin-top:10px;">
-<b>🍹 Bebidas:</b><br>
+<b>Mesa {{o.table}}</b><br>
+👤 {{o.name}}<br><br>
+
+<b>🍽️ Items:</b><br>
+{% for i in o.food %}
+• {{i}}<br>
+{% endfor %}
+
 {% for d in o.drinks %}
 • {{d}}<br>
 {% endfor %}
-</div>
-{% endif %}
+
+<br>
 
 <div class="status 
-{% if o[5]=='Pendente' %}pending{% endif %}
-{% if o[5]=='Preparando' %}preparing{% endif %}
-{% if o[5]=='Concluído' %}done{% endif %}
+{% if o.status=='Pendente' %}pending{% endif %}
+{% if o.status=='Preparando' %}preparing{% endif %}
+{% if o.status=='Concluído' %}done{% endif %}
 ">
-{{o[5]}}
+{{o.status}}
 </div>
 
-<button class="yellow" onclick="update({{o[0]}},'Preparando')">Preparar</button>
-<button class="green" onclick="update({{o[0]}},'Concluído')">Concluir</button>
-<button class="red" onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
-<button onclick="window.open('/send_whatsapp/{{o[0]}}')">📲 WhatsApp</button>
+<button class="yellow" onclick="update({{o.id}},'Preparando')">Preparar</button>
+<button class="green" onclick="update({{o.id}},'Concluído')">Concluir</button>
+<button class="red" onclick="window.open('/receipt_any/{{o.id}}')">🧾</button>
+<button onclick="window.open('/send_whatsapp/{{o.id}}')">📲</button>
+
 </div>
 {% endfor %}
 </div>
@@ -490,36 +467,28 @@ button:active{
 <div class="grid">
 {% for o in done %}
 <div class="order">
-<b>Mesa {{o[4]}}</b><br>
-👤 {{o[1]}}<br><br>
-🍽️ {{o[2]}}<br>
+
+<b>Mesa {{o.table}}</b><br>
+👤 {{o.name}}<br>
 <div class="status done">Concluído</div>
-<button onclick="window.open('/receipt_any/{{o[0]}}')">🧾</button>
-<button onclick="window.open('/send_whatsapp/{{o[0]}}')">📲</button>
+
+<button onclick="window.open('/receipt_any/{{o.id}}')">🧾</button>
+<button onclick="window.open('/send_whatsapp/{{o.id}}')">📲</button>
+
 </div>
 {% endfor %}
 </div>
 
 <script>
 function update(id,status){
-
-let msg="";
-if(status=="Preparando"){msg="Pedido em preparação";}
-if(status=="Concluído"){msg="Pedido concluído";}
-
 fetch("/update_status",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({id:id,status:status})
-}).then(()=>{
-alert(msg);
-location.reload();
-});
+}).then(()=>location.reload());
 }
 </script>
-<script>
-setInterval(()=>location.reload(), 5000);
-</script>
+
 """, active=active, done=done)
 
 # ---------------- UPDATE STATUS ----------------
