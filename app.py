@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 import qrcode
 from io import BytesIO
 import urllib.parse
+import json
 
 app = Flask(__name__)
 
@@ -239,40 +240,49 @@ window.location="/track/"+d.id;
 """, items=items, name=NAME, table=table)
 
 # ---------------- ORDER ----------------
+import json
+
 @app.route("/order", methods=["POST"])
 def order():
-    d=request.json
+    d = request.json
 
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
 
-    c.execute("INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
-              (d["name"],import json
+    # 🔹 Build items with category
+    items_with_category = []
 
-items_with_category = []
+    for item in d["items"]:
+        row = c.execute(
+            "SELECT name, category FROM menu WHERE name=?",
+            (item,)
+        ).fetchone()
 
-conn = sqlite3.connect("restaurant.db")
-c = conn.cursor()
+        if row:
+            items_with_category.append({
+                "name": row[0],
+                "category": row[1]
+            })
 
-for item in d["items"]:
-    row = c.execute(
-    "INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
-    (
-        d["name"],
-        json.dumps(items_with_category),
-        d["total"],
-        d["table"],
-        "Pendente",
-        datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M"),
-        d.get("phone", "")
+    # 🔹 Insert order
+    c.execute(
+        "INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
+        (
+            d["name"],
+            json.dumps(items_with_category),
+            d["total"],
+            d["table"],
+            "Pendente",
+            datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M"),
+            d.get("phone", "")
+        )
     )
-)
 
-    oid=c.lastrowid
+    oid = c.lastrowid
     conn.commit()
     conn.close()
 
-    return jsonify({"id":oid})
+    return jsonify({"id": oid})
 
 # ---------------- TRACK ----------------
 @app.route("/track/<int:id>")
