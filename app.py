@@ -315,10 +315,35 @@ body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:
 def kitchen():
     conn=sqlite3.connect("restaurant.db")
     c=conn.cursor()
+import json
 
-    active=c.execute("SELECT * FROM orders WHERE status!='Concluído' ORDER BY id DESC").fetchall()
-    done=c.execute("SELECT * FROM orders WHERE status='Concluído' ORDER BY id DESC LIMIT 20").fetchall()
+raw_active = c.execute("SELECT * FROM orders WHERE status!='Concluído' ORDER BY id DESC").fetchall()
+raw_done = c.execute("SELECT * FROM orders WHERE status='Concluído' ORDER BY id DESC LIMIT 20").fetchall()
 
+def process_orders(rows):
+    result = []
+    for o in rows:
+        try:
+            items = json.loads(o[2])
+        except:
+            items = []
+
+        food = [i["name"] for i in items if i.get("category")=="food"]
+        drinks = [i["name"] for i in items if i.get("category")=="drink"]
+
+        result.append({
+            "id": o[0],
+            "name": o[1],
+            "table": o[4],
+            "status": o[5],
+            "food": food,
+            "drinks": drinks
+        })
+    return result
+
+active = process_orders(raw_active)
+done = process_orders(raw_done)
+    
     conn.close()
 
     return render_template_string("""
