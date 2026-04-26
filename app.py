@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template_string, redirect, send_file
 import sqlite3
 from datetime import datetime
-from zoneinfo import zoneinfo
+from ZoneInfo import ZoneInfo
 import qrcode
 from io import BytesIO
 import urllib.parse
@@ -248,7 +248,7 @@ def order():
 
     c.execute("INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
               (d["name"],str(d["items"]),d["total"],d["table"],
-               "Pendente",datetime.now(pytz.timezone("Africa/Maputo")).strftime("%d-%m-%Y %H:%M"),
+               "Pendente",datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M"),
                d.get("phone","")))
 
     oid=c.lastrowid
