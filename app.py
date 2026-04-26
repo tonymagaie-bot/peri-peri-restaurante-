@@ -384,7 +384,9 @@ function confirmChoice(choice){
 </script>
 
 <button onclick="window.location='/?table={{o[4]}}'">Novo Pedido</button>
-<button onclick="window.location='/track/{{o[0]}}'">Consultar</button>
+<button onclick="callWaiter()" style="background:#ffc107;color:black;">
+📢 Consultar
+</button>
 
 """, o=o)
 # ---------------- CLIENT CONFIRM ----------------
