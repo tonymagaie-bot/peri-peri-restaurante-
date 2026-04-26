@@ -312,10 +312,20 @@ def track(id):
     o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
     conn.close()
 
-    return render_template_string("""
+return render_template_string("""
 <style>
 body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:20px}
 .box{background:#1c1c1c;padding:20px;border-radius:12px}
+button{
+    padding:14px 22px;
+    border:none;
+    border-radius:10px;
+    margin:10px;
+    font-size:18px;
+}
+.yes{background:#28a745;color:white}
+.no{background:#dc3545;color:white}
+.wait{background:#ff9800;color:black}
 </style>
 
 <h1>📦 Pedido</h1>
@@ -325,11 +335,40 @@ body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:
 <p><b>Mesa:</b> {{o[4]}}</p>
 <p><b>Status:</b> {{o[5]}}</p>
 <p><b>Data:</b> {{o[6]}}</p>
+
+{% if o[5] == "Aguardando Confirmação" %}
+    <h2 style="margin-top:20px;">Posso preparar o seu pedido?</h2>
+
+    <button class="yes" onclick="confirm('yes')">✅ Sim</button>
+    <button class="no" onclick="confirm('no')">❌ Não</button>
+
+{% elif o[5] == "Cancelado" %}
+    <h2 style="color:#dc3545;">❌ Pedido cancelado</h2>
+
+{% elif o[5] == "Preparando" %}
+    <h2 style="color:#00bcd4;">👨‍🍳 Em preparação...</h2>
+
+{% elif o[5] == "Concluído" %}
+    <h2 style="color:#28a745;">✅ Pronto!</h2>
+{% endif %}
+
 </div>
+
+<script>
+function confirm(choice){
+    fetch("/client_confirm",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            id: {{o[0]}},
+            choice: choice
+        })
+    }).then(()=>location.reload());
+}
+</script>
 
 <button onclick="window.location='/?table={{o[4]}}'">⬅ Voltar</button>
 """, o=o)
-
 # ---------------- KITCHEN ----------------
 @app.route("/kitchen")
 def kitchen():
