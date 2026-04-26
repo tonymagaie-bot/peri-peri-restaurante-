@@ -35,12 +35,34 @@ def init_db():
 
     if c.execute("SELECT COUNT(*) FROM menu").fetchone()[0] == 0:
         items = [
-            ("Frango Peri Peri", 400, "food"),
-            ("Asas Picantes", 300, "food"),
-            ("Hambúrguer", 250, "food"),
-            ("Cerveja", 120, "drink"),
-            ("Vinho", 250, "drink"),
-            ("Whisky", 180, "drink")
+    # 🍽️ FOOD
+    ("Frango Peri Peri", 400, "food"),
+    ("Frango Grelhado", 380, "food"),
+    ("Frango Frito", 350, "food"),
+    ("Asas Picantes", 300, "food"),
+    ("Hambúrguer Clássico", 250, "food"),
+    ("Cheeseburger Duplo", 320, "food"),
+    ("Pizza Margherita", 450, "food"),
+    ("Pizza Frango", 500, "food"),
+    ("Sanduíche de Atum", 220, "food"),
+    ("Batata Frita Grande", 180, "food"),
+    ("Arroz com Frango", 280, "food"),
+    ("Salada Mista", 200, "food"),
+
+    # 🍹 DRINKS
+    ("Cerveja 350ml", 120, "drink"),
+    ("Cerveja 500ml", 150, "drink"),
+    ("Refrigerante Cola", 80, "drink"),
+    ("Fanta Laranja", 80, "drink"),
+    ("Sprite", 80, "drink"),
+    ("Água Mineral", 50, "drink"),
+    ("Sumo Natural Manga", 120, "drink"),
+    ("Sumo Natural Laranja", 120, "drink"),
+    ("Vinho Tinto", 250, "drink"),
+    ("Vinho Branco", 250, "drink"),
+    ("Whisky Dose", 180, "drink"),
+    ("Gin Tónico", 220, "drink"),
+        ]
         ]
         c.executemany("INSERT INTO menu VALUES (NULL,?,?,?)", items)
 
