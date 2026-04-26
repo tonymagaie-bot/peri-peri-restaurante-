@@ -221,6 +221,9 @@ button:active{
 <h3 id="total">0 MZN</h3>
 
 <button style="width:100%" onclick="order()">📦 Enviar Pedido</button>
+<button style="width:100%;margin-top:10px;" onclick="goTrack()">
+📦 Ver meu pedido
+</button>
 </div>
 
 <script>
