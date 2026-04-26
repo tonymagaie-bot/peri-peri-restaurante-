@@ -83,6 +83,18 @@ def ensure_phone_column():
 
 ensure_phone_column()
 
+# ---------------- ADD ALERT COLUMN ----------------
+def ensure_alert_column():
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    try:
+        c.execute("ALTER TABLE orders ADD COLUMN alert TEXT")
+    except:
+        pass
+    conn.commit()
+    conn.close()
+
+ensure_alert_column()
 # ---------------- CUSTOMER UI ----------------
 @app.route("/")
 def menu():
@@ -433,10 +445,9 @@ def call_waiter():
     conn = sqlite3.connect("restaurant.db")
     c = conn.cursor()
 
-    # Update status OR add flag
     c.execute(
-        "UPDATE orders SET status=? WHERE id=?",
-        ("Cliente chamou", d["id"])
+        "UPDATE orders SET alert=? WHERE id=?",
+        ("1", d["id"])
     )
 
     conn.commit()
@@ -470,14 +481,15 @@ def kitchen():
             food = [i["name"] for i in items if i.get("category") == "food"]
             drinks = [i["name"] for i in items if i.get("category") == "drink"]
 
-            result.append({
-                "id": o[0],
-                "name": o[1],
-                "table": o[4],
-                "status": o[5],
-                "food": food,
-                "drinks": drinks
-            })
+        result.append({
+    "id": o[0],
+    "name": o[1],
+    "table": o[4],
+    "status": o[5],
+    "alert": o[7] if len(o) > 7 else None,
+    "food": food,
+    "drinks": drinks
+})
         return result
 
     active = process_orders(raw_active)
