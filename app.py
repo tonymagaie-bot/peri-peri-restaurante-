@@ -368,6 +368,31 @@ function confirmChoice(choice){
 
 <button onclick="window.location='/?table={{o[4]}}'">⬅ Voltar</button>
 """, o=o)
+
+# ---------------- CLIENT CONFIRM ----------------
+@app.route("/client_confirm", methods=["POST"])
+def client_confirm():
+    d = request.json
+
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+
+    if d["choice"] == "yes":
+        c.execute(
+            "UPDATE orders SET status=? WHERE id=?",
+            ("Preparando", d["id"])
+        )
+    else:
+        c.execute(
+            "UPDATE orders SET status=? WHERE id=?",
+            ("Cancelado", d["id"])
+        )
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"ok": True})
+    
 # ---------------- KITCHEN ----------------
 @app.route("/kitchen")
 def kitchen():
