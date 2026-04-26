@@ -255,13 +255,18 @@ conn = sqlite3.connect("restaurant.db")
 c = conn.cursor()
 
 for item in d["items"]:
-    row = c.execute("SELECT name, category FROM menu WHERE name=?", (item,)).fetchone()
-    if row:
-        items_with_category.append({"name": row[0], "category": row[1]})
-
-conn.close),d["total"],d["table"],
-               "Pendente",datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M"),
-               d.get("phone","")))
+    row = c.execute(
+    "INSERT INTO orders VALUES (NULL,?,?,?,?,?,?,?)",
+    (
+        d["name"],
+        json.dumps(items_with_category),
+        d["total"],
+        d["table"],
+        "Pendente",
+        datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M"),
+        d.get("phone", "")
+    )
+)
 
     oid=c.lastrowid
     conn.commit()
