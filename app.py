@@ -289,16 +289,14 @@ def order():
     c.execute(
         "INSERT INTO orders VALUES (NULL,?,?,?,?,?,?)",
         (
-            d["name"],
-            json.dumps(items_with_category),
-            d["total"],
-            d["table"],
-            "Pendente",
-            datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M"),
-            d.get("phone", "")
-        )
-    )
-
+(
+    d["name"],
+    json.dumps(items_with_category),
+    d["total"],
+    d["table"],
+    "Pendente",
+    datetime.now(ZoneInfo("Africa/Maputo")).strftime("%d-%m-%Y %H:%M")
+)            
     oid = c.lastrowid
     conn.commit()
     conn.close()
