@@ -63,7 +63,6 @@ def init_db():
     ("Whisky Dose", 180, "drink"),
     ("Gin Tónico", 220, "drink"),
         ]
-        ]
         c.executemany("INSERT INTO menu VALUES (NULL,?,?,?)", items)
 
     conn.commit()
