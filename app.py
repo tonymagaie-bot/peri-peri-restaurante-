@@ -307,12 +307,12 @@ d.get("phone", "")
 # ---------------- TRACK ----------------
 @app.route("/track/<int:id>")
 def track(id):
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
     conn.close()
 
-return render_template_string("""
+    return render_template_string("""
 <style>
 body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:20px}
 .box{background:#1c1c1c;padding:20px;border-radius:12px}
@@ -325,7 +325,6 @@ button{
 }
 .yes{background:#28a745;color:white}
 .no{background:#dc3545;color:white}
-.wait{background:#ff9800;color:black}
 </style>
 
 <h1>📦 Pedido</h1>
@@ -337,16 +336,16 @@ button{
 <p><b>Data:</b> {{o[6]}}</p>
 
 {% if o[5] == "Aguardando Confirmação" %}
-    <h2 style="margin-top:20px;">Posso preparar o seu pedido?</h2>
+    <h2>Posso preparar o seu pedido?</h2>
 
-    <button class="yes" onclick="confirm('yes')">✅ Sim</button>
-    <button class="no" onclick="confirm('no')">❌ Não</button>
+    <button class="yes" onclick="confirmChoice('yes')">✅ Sim</button>
+    <button class="no" onclick="confirmChoice('no')">❌ Não</button>
 
 {% elif o[5] == "Cancelado" %}
     <h2 style="color:#dc3545;">❌ Pedido cancelado</h2>
 
 {% elif o[5] == "Preparando" %}
-    <h2 style="color:#00bcd4;">👨‍🍳 Em preparação...</h2>
+    <h2 style="color:#007bff;">👨‍🍳 Em preparação...</h2>
 
 {% elif o[5] == "Concluído" %}
     <h2 style="color:#28a745;">✅ Pronto!</h2>
@@ -355,7 +354,7 @@ button{
 </div>
 
 <script>
-function confirm(choice){
+function confirmChoice(choice){
     fetch("/client_confirm",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
