@@ -472,6 +472,7 @@ def kitchen():
     
     def process_orders(rows):
     result = []
+
     for o in rows:
         try:
             items = json.loads(o[2])
