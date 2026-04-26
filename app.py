@@ -352,8 +352,7 @@ def kitchen():
 
     conn.close()
 
-    return render_template_string(""" ... your HTML unchanged ... """,
-        active=active,
+    return render_template_string("""
 <style>
 body{
     background:#050505;
