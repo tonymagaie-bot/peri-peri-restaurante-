@@ -288,8 +288,8 @@ def order():
     # 🔹 Insert order
     c.execute(
         "INSERT INTO orders VALUES (NULL,?,?,?,?,?,?)",
-        (
-(
+    )
+)
     d["name"],
     json.dumps(items_with_category),
     d["total"],
