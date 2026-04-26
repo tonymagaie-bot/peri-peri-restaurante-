@@ -368,9 +368,9 @@ function confirmChoice(choice){
 </script>
 
 <button onclick="window.location='/?table={{o[4]}}'">⬅ Voltar</button>
-""", o=o)
-<button id="trackBtn" style="width:100%;margin-top:10px;display:none;">
-"📦 Ver meu pedido"
+
+<button onclick="window.location='/track/{{o[0]}}'" style="width:100%;margin-top:10px;">
+📦 Voltar ao Pedido
 </button>
 
 # ---------------- CLIENT CONFIRM ----------------
