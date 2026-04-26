@@ -425,7 +425,23 @@ button:active{
 <div class="order">
 <b style="font-size:26px;">Mesa {{o[4]}}</b><br>
 👤 {{o[1]}}<br><br>
-🍽️ {{o[2]}}<br><br>
+{% if o.food %}
+<div>
+<b>🍳 Comida:</b><br>
+{% for f in o.food %}
+• {{f}}<br>
+{% endfor %}
+</div>
+{% endif %}
+
+{% if o.drinks %}
+<div style="margin-top:10px;">
+<b>🍹 Bebidas:</b><br>
+{% for d in o.drinks %}
+• {{d}}<br>
+{% endfor %}
+</div>
+{% endif %}
 
 <div class="status 
 {% if o[5]=='Pendente' %}pending{% endif %}
