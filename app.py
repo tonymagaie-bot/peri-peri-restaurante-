@@ -410,7 +410,25 @@ def client_confirm():
     conn.close()
 
     return jsonify({"ok": True})
-    
+
+# ---------------- CUSTOMER ENQUIRY ----------------
+@app.route("/call_waiter", methods=["POST"])
+def call_waiter():
+    d = request.json
+
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+
+    # Update status OR add flag
+    c.execute(
+        "UPDATE orders SET status=? WHERE id=?",
+        ("Cliente chamou", d["id"])
+    )
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"ok": True})
 # ---------------- KITCHEN ----------------
 @app.route("/kitchen")
 def kitchen():
