@@ -371,6 +371,18 @@ button{
 </div>
 
 <script>
+function callWaiter(){
+    fetch("/call_waiter",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            id: {{o[0]}}
+        })
+    }).then(()=>{
+        alert("Pedido enviado para a cozinha!");
+        location.reload();
+    });
+}
 function confirmChoice(choice){
     fetch("/client_confirm",{
         method:"POST",
