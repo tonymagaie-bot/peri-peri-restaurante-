@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template_string, redirect, send_file
 import sqlite3
 from datetime import datetime
-from ZoneInfo import ZoneInfo
+from zoneinfo import ZoneInfo
 import qrcode
 from io import BytesIO
 import urllib.parse
