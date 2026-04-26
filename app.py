@@ -444,7 +444,7 @@ button:active{
 {% for o in active %}
 <div class="order">
 
-<b style="font-size:26px;">Mesa {{o.table}}</b><br>
+<b style="font-size:26px;">Mesa {{o[4]}}</b><br>
 👤 {{o.name}}<br><br>
 
 {% if o.food %}
