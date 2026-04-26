@@ -622,7 +622,7 @@ Confirmar Pedido
 <div class="order">
 
 <b>Mesa {{o.table}}</b><br>
-👤 {{o.name}}<br><br>
+👤 {{o["name"]}}<br><br>
 
 <div class="status done">Concluído</div>
 
