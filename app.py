@@ -371,7 +371,6 @@ function confirmChoice(choice){
 
 """, o=o)
     
-
 # ---------------- CLIENT CONFIRM ----------------
 @app.route("/client_confirm", methods=["POST"])
 def client_confirm():
