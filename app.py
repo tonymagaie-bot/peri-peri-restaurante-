@@ -227,6 +227,15 @@ button:active{
 </div>
 
 <script>
+function goTrack(){
+    let id = localStorage.getItem("last_order_id");
+
+    if(id){
+        window.location = "/track/" + id;
+    }else{
+        alert("Nenhum pedido encontrado!");
+    }
+}
 let cart=[];let total=0;
 
 function add(n,p){
