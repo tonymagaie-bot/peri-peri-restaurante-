@@ -653,8 +653,8 @@ def update_status():
     c = conn.cursor()
 
     c.execute(
-        "UPDATE orders SET status=? WHERE id=?",
-        (d["status"], d["id"])
+    "UPDATE orders SET status=?, alert=NULL WHERE id=?",
+    (d["status"], d["id"])
     )
 
     conn.commit()
