@@ -386,26 +386,35 @@ h1{
     text-align:center;
     color:#ffcc00;
     font-size:46px;
-    margin-bottom:20px;
+}
+
+h2{
+    font-size:30px;
+    margin-top:40px;
+    border-left:6px solid #ff4d4d;
+    padding-left:12px;
 }
 
 .grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
     gap:20px;
 }
 
 .order{
     background:#121212;
-    padding:18px;
-    border-radius:14px;
+    padding:22px;
+    border-radius:18px;
+    font-size:22px;
 }
 
 .status{
-    padding:10px;
-    border-radius:10px;
-    text-align:center;
+    padding:12px;
+    border-radius:12px;
     font-weight:bold;
+    text-align:center;
+    margin:12px 0;
+    font-size:18px;
 }
 
 .pending{background:#ffc107;color:black}
@@ -413,40 +422,52 @@ h1{
 .done{background:#28a745}
 
 button{
-    margin:5px;
-    padding:10px;
+    margin:6px;
+    padding:12px 16px;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
+    font-size:16px;
     font-weight:bold;
 }
 
 .yellow{background:#ffc107}
 .green{background:#28a745;color:white}
 .red{background:#dc3545;color:white}
+
+button:active{
+    transform:scale(0.95);
+}
 </style>
 
-<h1>🍹 Kitchen Dashboard</h1>
+<h1>🍹 Bar e Cozinha</h1>
 
-<h2>📌 Active Orders</h2>
+<h2>📌 Ativos</h2>
 <div class="grid">
 {% for o in active %}
 <div class="order">
 
-<b>Mesa {{o.table}}</b><br>
+<b style="font-size:26px;">Mesa {{o.table}}</b><br>
 👤 {{o.name}}<br><br>
 
-<b>🍽️ Items:</b><br>
-{% for i in o.food %}
-• {{i}}<br>
+{% if o.food %}
+<div>
+<b>🍳 Comida:</b><br>
+{% for f in o.food %}
+• {{f}}<br>
 {% endfor %}
+</div>
+{% endif %}
 
+{% if o.drinks %}
+<div style="margin-top:10px;">
+<b>🍹 Bebidas:</b><br>
 {% for d in o.drinks %}
 • {{d}}<br>
 {% endfor %}
+</div>
+{% endif %}
 
-<br>
-
-<div class="status 
+<div class="status
 {% if o.status=='Pendente' %}pending{% endif %}
 {% if o.status=='Preparando' %}preparing{% endif %}
 {% if o.status=='Concluído' %}done{% endif %}
@@ -457,7 +478,7 @@ button{
 <button class="yellow" onclick="update({{o.id}},'Preparando')">Preparar</button>
 <button class="green" onclick="update({{o.id}},'Concluído')">Concluir</button>
 <button class="red" onclick="window.open('/receipt_any/{{o.id}}')">🧾</button>
-<button onclick="window.open('/send_whatsapp/{{o.id}}')">📲</button>
+<button onclick="window.open('/send_whatsapp/{{o.id}}')">📲 WhatsApp</button>
 
 </div>
 {% endfor %}
@@ -469,7 +490,8 @@ button{
 <div class="order">
 
 <b>Mesa {{o.table}}</b><br>
-👤 {{o.name}}<br>
+👤 {{o.name}}<br><br>
+
 <div class="status done">Concluído</div>
 
 <button onclick="window.open('/receipt_any/{{o.id}}')">🧾</button>
@@ -490,37 +512,6 @@ body:JSON.stringify({id:id,status:status})
 </script>
 
 """, active=active, done=done)
-
-# ---------------- UPDATE STATUS ----------------
-@app.route("/update_status", methods=["POST"])
-def update_status():
-    d=request.json
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    c.execute("UPDATE orders SET status=? WHERE id=?", (d["status"],d["id"]))
-    conn.commit()
-    conn.close()
-    return jsonify(ok=True)
-
-# ---------------- RECEIPT ----------------
-@app.route("/receipt_any/<int:id>")
-def receipt_any(id):
-    conn=sqlite3.connect("restaurant.db")
-    c=conn.cursor()
-    o=c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
-    conn.close()
-
-    return render_template_string("""
-<body onload="window.print()">
-<h2>🌶️ Peri Peri</h2>
-<p>Nome: {{o[1]}}</p>
-<p>Mesa: {{o[4]}}</p>
-<p>Status: {{o[5]}}</p>
-<p>Itens: {{o[2]}}</p>
-<p>Total: {{o[3]}} MZN</p>
-<p>{{o[6]}}</p>
-</body>
-""", o=o)
 
 # ---------------- QR ----------------
 @app.route("/qr/<int:table>")
