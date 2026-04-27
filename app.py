@@ -371,18 +371,6 @@ button{
 </div>
 
 <script>
-function callWaiter(){
-    fetch("/call_waiter",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            id: {{o[0]}}
-        })
-    }).then(()=>{
-        alert("Pedido enviado para a cozinha!");
-        location.reload();
-    });
-}
 function confirmChoice(choice){
     fetch("/client_confirm",{
         method:"POST",
@@ -396,9 +384,7 @@ function confirmChoice(choice){
 </script>
 
 <button onclick="window.location='/?table={{o[4]}}'">Novo Pedido</button>
-<button onclick="callWaiter()" style="background:#ffc107;color:black;">
-📢 Consultar
-</button>
+<button onclick="window.location='/track/{{o[0]}}'">Consultar</button>
 
 """, o=o)
 # ---------------- CLIENT CONFIRM ----------------
@@ -433,9 +419,10 @@ def call_waiter():
     conn = sqlite3.connect("restaurant.db")
     c = conn.cursor()
 
+    # Update status OR add flag
     c.execute(
-        "UPDATE orders SET alert=? WHERE id=?",
-        ("1", d["id"])
+        "UPDATE orders SET status=? WHERE id=?",
+        ("Cliente chamou", d["id"])
     )
 
     conn.commit()
@@ -458,11 +445,8 @@ def kitchen():
         "SELECT * FROM orders WHERE status='Concluído' ORDER BY id DESC LIMIT 20"
     ).fetchall()
 
-    conn.close()
-
     def process_orders(rows):
         result = []
-
         for o in rows:
             try:
                 items = json.loads(o[2])
@@ -480,13 +464,14 @@ def kitchen():
                 "food": food,
                 "drinks": drinks
             })
-
         return result
 
     active = process_orders(raw_active)
     done = process_orders(raw_done)
 
-    return render_template_string(""" ... """, active=active, done=done)
+    conn.close()
+
+    return render_template_string("""
 <style>
 body{
     background:#050505;
@@ -605,7 +590,7 @@ Confirmar Pedido
 <div class="order">
 
 <b>Mesa {{o.table}}</b><br>
-👤 {{o["name"]}}<br><br>
+👤 {{o.name}}<br><br>
 
 <div class="status done">Concluído</div>
 
@@ -637,8 +622,8 @@ def update_status():
     c = conn.cursor()
 
     c.execute(
-    "UPDATE orders SET status=?, alert=NULL WHERE id=?",
-    (d["status"], d["id"])
+        "UPDATE orders SET status=? WHERE id=?",
+        (d["status"], d["id"])
     )
 
     conn.commit()
