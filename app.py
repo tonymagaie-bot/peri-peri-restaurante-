@@ -7,8 +7,10 @@ from io import BytesIO
 import urllib.parse
 import json
 
-app = Flask(__name__)
+from flask_socketio import SocketIO
 
+app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 NAME = "Peri Peri 🌶️"
 
 # ---------------- DATABASE ----------------
