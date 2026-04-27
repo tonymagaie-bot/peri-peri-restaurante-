@@ -487,7 +487,6 @@ def process_orders(rows):
             "name": o[1],
             "table": o[4],
             "status": o[5],
-            "alert": None
             "food": food,
             "drinks": drinks
         })
