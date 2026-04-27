@@ -656,11 +656,13 @@ def update_status():
 
     conn.commit()
     conn.close()
-    
-socketio.emit("status_updated", {
-    "id": d["id"],
-    "status": d["status"]
-})
+
+    # ✅ SAME INDENT LEVEL AS conn.commit()
+    socketio.emit("status_updated", {
+        "id": d["id"],
+        "status": d["status"]
+    })
+
     return jsonify({"ok": True})
 # ---------------- QR ----------------
 @app.route("/qr/<int:table>")
