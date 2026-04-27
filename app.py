@@ -83,18 +83,6 @@ def ensure_phone_column():
 
 ensure_phone_column()
 
-# ---------------- ADD ALERT COLUMN ----------------
-def ensure_alert_column():
-    conn = sqlite3.connect("restaurant.db")
-    c = conn.cursor()
-    try:
-        c.execute("ALTER TABLE orders ADD COLUMN alert TEXT")
-    except:
-        pass
-    conn.commit()
-    conn.close()
-
-ensure_alert_column()
 # ---------------- CUSTOMER UI ----------------
 @app.route("/")
 def menu():
