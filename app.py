@@ -458,35 +458,35 @@ def kitchen():
         "SELECT * FROM orders WHERE status='Concluído' ORDER BY id DESC LIMIT 20"
     ).fetchall()
 
-def process_orders(rows):
-    result = []
+    conn.close()
 
-    for o in rows:
-        try:
-            items = json.loads(o[2])
-        except:
-            items = []
+    def process_orders(rows):
+        result = []
 
-        food = [i["name"] for i in items if i.get("category") == "food"]
-        drinks = [i["name"] for i in items if i.get("category") == "drink"]
+        for o in rows:
+            try:
+                items = json.loads(o[2])
+            except:
+                items = []
 
-        result.append({
-            "id": o[0],
-            "name": o[1],
-            "table": o[4],
-            "status": o[5],
-            "food": food,
-            "drinks": drinks
-        })
+            food = [i["name"] for i in items if i.get("category") == "food"]
+            drinks = [i["name"] for i in items if i.get("category") == "drink"]
 
-    return result
-    
+            result.append({
+                "id": o[0],
+                "name": o[1],
+                "table": o[4],
+                "status": o[5],
+                "food": food,
+                "drinks": drinks
+            })
+
+        return result
+
     active = process_orders(raw_active)
     done = process_orders(raw_done)
 
-    conn.close()
-
-    return render_template_string("""
+    return render_template_string(""" ... """, active=active, done=done)
 <style>
 body{
     background:#050505;
