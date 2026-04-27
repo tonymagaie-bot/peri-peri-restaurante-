@@ -597,11 +597,6 @@ button:active{
 {% if o.status=='Concluído' %}done{% endif %}
 ">
 {{o.status}}
-{% if o.alert == "1" %}
-<div style="color:#ffc107;font-weight:bold;">
-⚠️ Cliente está a consultar!
-</div>
-{% endif %}
 </div>
 
 <button class="yellow" onclick="update({{o.id}},'Aguardando Confirmação')">
