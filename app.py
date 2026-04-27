@@ -324,7 +324,7 @@ d.get("phone", "")
     conn.commit()
     conn.close()
     
-socketio.emit("new_order", {"id": oid})
+    socketio.emit("new_order", {"id": oid})
 
     return jsonify({"id": oid})
 
