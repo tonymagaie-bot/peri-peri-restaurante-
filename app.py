@@ -569,6 +569,7 @@ button:active{
 {% if o.status=='Pendente' %}pending{% endif %}
 {% if o.status=='Preparando' %}preparing{% endif %}
 {% if o.status=='Concluído' %}done{% endif %}
+{% if o.status=='Cliente chamou' %}pending{% endif %}
 ">
 {{o.status}}
 </div>
