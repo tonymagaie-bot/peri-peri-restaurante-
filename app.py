@@ -321,6 +321,8 @@ d.get("phone", "")
     oid = c.lastrowid
     conn.commit()
     conn.close()
+    
+socketio.emit("new_order", {"id": oid})
 
     return jsonify({"id": oid})
 
