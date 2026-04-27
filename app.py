@@ -574,6 +574,12 @@ button:active{
 {{o.status}}
 </div>
 
+{% if o.status=='Cliente chamou' %}
+<div style="color:#ffc107;font-weight:bold;">
+⚠️ Cliente está a consultar!
+</div>
+{% endif %}
+
 <button class="yellow" onclick="update({{o.id}},'Aguardando Confirmação')">
 Confirmar Pedido
 </button>
