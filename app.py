@@ -401,20 +401,27 @@ socket.on("status_updated", function(data){
     <p><b>Data:</b> {{o[6]}}</p>  
 
     {% if o[5] == "Aguardando Confirmação" %}
-        <h2>Posso preparar o seu pedido?</h2>
+    <h2>Posso preparar o seu pedido?</h2>
 
-        <button class="yes" onclick="confirmChoice('yes')">Sim</button>  
-        <button class="no" onclick="confirmChoice('no')">Não</button>
+{% elif o[5] == "Cliente chamou" %}
+    <h2 style="color:#ffc107;">
+    📢 Cliente chamou a cozinha...
+    </h2>
 
-    {% elif o[5] == "Cancelado" %}
-        <h2 style="color:#dc3545;">Pedido cancelado</h2>
+{% elif o[5] == "Recebido, a caminho" %}
+    <h2 style="color:#17a2b8;">
+    🚶‍♂️ Recebido! A caminho...
+    </h2>
 
-    {% elif o[5] == "Preparando" %}
-        <h2 style="color:#007bff;">Em preparação...</h2>
+{% elif o[5] == "Preparando" %}
+    <h2 style="color:#007bff;">Em preparação...</h2>
 
-    {% elif o[5] == "Concluído" %}
-        <h2 style="color:#28a745;">Pronto!</h2>
-    {% endif %}
+{% elif o[5] == "Cancelado" %}
+    <h2 style="color:#dc3545;">Pedido cancelado</h2>
+
+{% elif o[5] == "Concluído" %}
+    <h2 style="color:#28a745;">Pronto!</h2>
+{% endif %}
 
     </div>  
 
