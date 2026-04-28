@@ -618,7 +618,7 @@ Confirmar Pedido
 <h2>✅ Concluídos</h2>
 <div class="grid">
 {% for o in done %}
-<div class="order">
+<div class="order" id="order-{{o.id}}">
 
 <b>Mesa {{o.table}}</b><br>
 👤 {{o.name}}<br><br>
