@@ -15,6 +15,28 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 @app.route("/health")
 def health():
     return "OK", 200
+
+@app.route("/order_data/<int:id>")
+def order_data(id):
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+
+    o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+    conn.close()
+
+    items = json.loads(o[2]) if o[2] else []
+
+    food = [i["name"] for i in items if i.get("category") == "food"]
+    drinks = [i["name"] for i in items if i.get("category") == "drink"]
+
+    return jsonify({
+        "id": o[0],
+        "name": o[1],
+        "table": o[4],
+        "status": o[5],
+        "food": food,
+        "drinks": drinks
+    })
     
 NAME = "Peri Peri 🌶️"
 
