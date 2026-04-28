@@ -1,6 +1,3 @@
-@app.route("/health")
-def health():
-    return "OK", 200
 from flask import Flask, request, jsonify, render_template_string, redirect, send_file
 import sqlite3
 from datetime import datetime
@@ -15,7 +12,10 @@ from flask_socketio import SocketIO
 app = Flask(__name__)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
-
+@app.route("/health")
+def health():
+    return "OK", 200
+    
 NAME = "Peri Peri 🌶️"
 
 # ---------------- DATABASE ----------------
