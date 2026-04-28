@@ -630,14 +630,29 @@ Confirmar Pedido
 </div>
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script>
 
-function update(id,status){
-fetch("/update_status",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({id:id,status:status})
+<script>
+const socket = io();
+
+// 🔥 When new order arrives
+socket.on("new_order", function(data){
+    console.log("New order:", data);
+    location.reload();
 });
+
+// 🔥 When status changes
+socket.on("status_updated", function(data){
+    console.log("Status updated:", data);
+    location.reload();
+});
+
+// Existing function
+function update(id,status){
+    fetch("/update_status",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({id:id,status:status})
+    });
 }
 </script>
 
