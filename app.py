@@ -369,93 +369,134 @@ const socket = io();
 
 socket.on("status_updated", function(data){
     if(data.id == {{o[0]}}){
-        location.reload();
+        setTimeout(() => location.reload(), 300);
     }
 });
 </script>
 
-    <style>  
-    body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:20px}  
-    .box{background:#1c1c1c;padding:20px;border-radius:12px}  
-    button{  
-        padding:14px 22px;  
-        border:none;  
-        border-radius:10px;  
-        margin:10px;  
-        font-size:18px;  
-    }  
-    .yes{background:#28a745;color:white}  
-    .no{background:#dc3545;color:white}  
-    </style>  
+<style>  
+body{
+    background:#0f0f0f;
+    color:white;
+    text-align:center;
+    font-family:Arial;
+    padding:25px;
+    font-size:22px;
+}
 
-    <h1>📦 Pedido</h1>  
+/* 🔥 BIGGER BOX */
+.box{
+    background:#1c1c1c;
+    padding:30px;
+    border-radius:16px;
+    max-width:600px;
+    margin:auto;
+}
 
-    <div class="box">  
-    <p><b>Nome:</b> {{o[1]}}</p>  
-    <p><b>Mesa:</b> {{o[4]}}</p>  
-     {% if o[5] == "Recebido, a caminho" %}
-<h2 style="color:#17a2b8;">
-🚶‍♂️ Recebido! A caminho...
+/* 🔥 BIG TEXT */
+h1{
+    font-size:48px;
+}
+
+h2{
+    font-size:36px;
+    margin-top:20px;
+}
+
+p{
+    font-size:26px;
+}
+
+/* 🔥 BIG BUTTONS */
+button{  
+    padding:18px 26px;  
+    border:none;  
+    border-radius:12px;  
+    margin:12px;  
+    font-size:22px;  
+    font-weight:bold;
+}  
+
+.yes{background:#28a745;color:white}  
+.no{background:#dc3545;color:white}  
+</style>  
+
+<h1>📦 Pedido</h1>  
+
+<div class="box">  
+
+<p><b>Nome:</b> {{o[1]}}</p>  
+<p><b>Mesa:</b> {{o[4]}}</p>  
+
+<!-- 🔥 STATUS: Cliente chamou -->
+{% if o[5] == "Cliente chamou" %}
+<h2 style="color:#ffc107;font-size:40px;">
+📢 Cliente chamou a cozinha...
 </h2>
-{% endif %} 
-    <p><b>Data:</b> {{o[6]}}</p>  
-
-    {% if o[5] == "Aguardando Confirmação" %}
-    <h2>Posso preparar o seu pedido?</h2>
-
-{% elif o[5] == "Cliente chamou" %}
-    <h2 style="color:#ffc107;">
-    📢 Cliente chamou a cozinha...
-    </h2>
-
-{% elif o[5] == "Recebido, a caminho" %}
-    <h2 style="color:#17a2b8;">
-    🚶‍♂️ Recebido! A caminho...
-    </h2>
-
-{% elif o[5] == "Preparando" %}
-    <h2 style="color:#007bff;">Em preparação...</h2>
-
-{% elif o[5] == "Cancelado" %}
-    <h2 style="color:#dc3545;">Pedido cancelado</h2>
-
-{% elif o[5] == "Concluído" %}
-    <h2 style="color:#28a745;">Pronto!</h2>
 {% endif %}
 
-    </div>  
+<!-- 🔥 STATUS FLOW -->
+{% if o[5] == "Aguardando Confirmação" %}
+    <h2 style="font-size:40px;">Posso preparar o seu pedido?</h2>
 
-    <script>  
-    function callWaiter(){  
-        fetch("/call_waiter",{  
-            method:"POST",  
-            headers:{"Content-Type":"application/json"},  
-            body:JSON.stringify({  
-                id: {{o[0]}}  
-            })  
-        }).then(()=>{  
-            alert("Pedido enviado para a cozinha!");  
-            location.reload();  
-        });  
-    }  
+    <button class="yes" onclick="confirmChoice('yes')">Sim</button>  
+    <button class="no" onclick="confirmChoice('no')">Não</button>
 
-    function confirmChoice(choice){  
-        fetch("/client_confirm",{  
-            method:"POST",  
-            headers:{"Content-Type":"application/json"},  
-            body:JSON.stringify({  
-                id: {{o[0]}},  
-                choice: choice  
-            })  
-        }).then(()=>location.reload());  
-    }  
-    </script>  
+{% elif o[5] == "Cancelado" %}
+    <h2 style="color:#dc3545;font-size:40px;">Pedido cancelado</h2>
 
-    <button onclick="window.location='/?table={{o[4]}}'">Novo Pedido</button>
-    <button onclick="callWaiter()" style="background:#ffc107;color:black;">
-    📢 Consultar
-    </button>
-    """, o=o)
+{% elif o[5] == "Preparando" %}
+    <h2 style="color:#007bff;font-size:40px;">Em preparação...</h2>
+
+{% elif o[5] == "Concluído" %}
+    <h2 style="color:#28a745;font-size:40px;">Pronto!</h2>
+
+{% elif o[5] == "Recebido, a caminho" %}
+    <h2 style="color:#17a2b8;font-size:40px;">
+    🚶‍♂️ Recebido! A caminho...
+    </h2>
+{% endif %}
+
+<p><b>Data:</b> {{o[6]}}</p>  
+
+</div>  
+
+<script>  
+
+function callWaiter(){  
+    fetch("/call_waiter",{  
+        method:"POST",  
+        headers:{"Content-Type":"application/json"},  
+        body:JSON.stringify({  
+            id: {{o[0]}}  
+        })  
+    }).then(()=>{  
+        alert("Pedido enviado para a cozinha!");  
+        location.reload();  
+    });  
+}  
+
+function confirmChoice(choice){  
+    fetch("/client_confirm",{  
+        method:"POST",  
+        headers:{"Content-Type":"application/json"},  
+        body:JSON.stringify({  
+            id: {{o[0]}},  
+            choice: choice  
+        })  
+    }).then(()=>location.reload());  
+}  
+
+</script>  
+
+<button onclick="window.location='/?table={{o[4]}}'">
+Novo Pedido
+</button>
+
+<button onclick="callWaiter()" style="background:#ffc107;color:black;">
+📢 Consultar
+</button>
+""", o=o)
 # ---------------- CLIENT CONFIRM ----------------
 @app.route("/client_confirm", methods=["POST"])
 def client_confirm():
