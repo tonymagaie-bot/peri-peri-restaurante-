@@ -381,7 +381,11 @@ def track(id):
     <div class="box">  
     <p><b>Nome:</b> {{o[1]}}</p>  
     <p><b>Mesa:</b> {{o[4]}}</p>  
-    <p><b>Status:</b> {{o[5]}}</p>  
+     {% if o[5] == "Recebido, a caminho" %}
+<h2 style="color:#17a2b8;">
+🚶‍♂️ Recebido! A caminho...
+</h2>
+{% endif %} 
     <p><b>Data:</b> {{o[6]}}</p>  
 
     {% if o[5] == "Aguardando Confirmação" %}
