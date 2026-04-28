@@ -568,7 +568,7 @@ button:active{
 {% for o in active %}
 <div class="order">
 
-<b style="font-size:26px;">Mesa {{o[4]}}</b><br>
+<b style="font-size:26px;">Mesa {{o.table}}</b><br>
 👤 {{o.name}}<br><br>
 
 {% if o.food %}
@@ -637,19 +637,72 @@ Confirmar Pedido
 <script>
 const socket = io();
 
-// 🔥 When new order arrives
+// 🔔 SOUND (optional but useful)
+const audio = new Audio("https://www.soundjay.com/buttons/beep-01a.mp3");
+
+// 🔥 NEW ORDER (instant)
 socket.on("new_order", function(data){
-    console.log("New order:", data);
-    location.reload();
+    audio.play();
+
+    fetch("/order_data/" + data.id)
+    .then(res => res.json())
+    .then(order => addOrder(order));
 });
 
-// 🔥 When status changes
+// 🔥 STATUS UPDATE (instant)
 socket.on("status_updated", function(data){
-    console.log("Status updated:", data);
-    location.reload();
+    let el = document.getElementById("order-" + data.id);
+    if(!el) return;
+
+    let statusBox = el.querySelector(".status");
+    statusBox.innerText = data.status;
+
+    statusBox.className = "status";
+    if(data.status === "Pendente") statusBox.classList.add("pending");
+    if(data.status === "Preparando") statusBox.classList.add("preparing");
+    if(data.status === "Concluído") statusBox.classList.add("done");
+
+    if(data.status === "Concluído"){
+        el.remove();
+    }
 });
 
-// Existing function
+// 🔥 ADD ORDER
+function addOrder(o){
+    const container = document.querySelector(".grid");
+
+    let food = o.food.length 
+        ? "<b>🍳 Comida:</b><br>• " + o.food.join("<br>• ") 
+        : "";
+
+    let drinks = o.drinks.length 
+        ? "<br><b>🍹 Bebidas:</b><br>• " + o.drinks.join("<br>• ") 
+        : "";
+
+    const html = `
+    <div class="order" id="order-${o.id}">
+        <b style="font-size:26px;">Mesa ${o.table}</b><br>
+        👤 ${o.name}<br><br>
+
+        ${food}
+        ${drinks}
+
+        <div class="status pending">Pendente</div>
+
+        <button class="yellow" onclick="update(${o.id},'Aguardando Confirmação')">
+        Confirmar Pedido
+        </button>
+
+        <button class="green" onclick="update(${o.id},'Concluído')">
+        Concluir
+        </button>
+    </div>
+    `;
+
+    container.insertAdjacentHTML("afterbegin", html);
+}
+
+// EXISTING UPDATE
 function update(id,status){
     fetch("/update_status",{
         method:"POST",
