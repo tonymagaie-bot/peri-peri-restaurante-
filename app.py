@@ -362,6 +362,18 @@ def track(id):
     conn.close()
 
     return render_template_string("""
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<script>
+const socket = io();
+
+socket.on("status_updated", function(data){
+    if(data.id == {{o[0]}}){
+        location.reload();
+    }
+});
+</script>
+
     <style>  
     body{background:#0f0f0f;color:white;text-align:center;font-family:Arial;padding:20px}  
     .box{background:#1c1c1c;padding:20px;border-radius:12px}  
