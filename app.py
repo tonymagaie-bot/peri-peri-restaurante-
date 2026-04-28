@@ -688,6 +688,7 @@ socket.on("status_updated", function(data){
     if(data.status === "Pendente") statusBox.classList.add("pending");
     if(data.status === "Preparando") statusBox.classList.add("preparing");
     if(data.status === "Concluído") statusBox.classList.add("done");
+    if(data.status === "Recebido, a caminho") statusBox.classList.add("preparing");
 
     if(data.status === "Concluído"){
         el.remove();
