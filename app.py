@@ -624,6 +624,11 @@ button:active{
 <div style="color:#ffc107;font-weight:bold;">
 ⚠️ Cliente está a consultar!
 </div>
+
+<button class="green"
+onclick="update({{o.id}},'Recebido, a caminho')">
+✅ Responder Cliente
+</button>
 {% endif %}
 
 <button class="yellow" onclick="update({{o.id}},'Aguardando Confirmação')">
