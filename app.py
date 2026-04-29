@@ -283,9 +283,10 @@ button:active{
 <ul id="cart"></ul>
 <h3 id="total">0 MZN</h3>
 
-<button style="width:100%" onclick="order()">📦 Enviar Pedido</button>
-<button style="width:100%;margin-top:10px;" onclick="goTrack()">
-📦 Ver meu pedido
+<button onclick="order()">📦 Enviar Pedido</button>
+
+<button onclick="goTrack()" style="background:#1f1f1f;">
+📍 Ver pedido
 </button>
 </div>
 
