@@ -125,11 +125,18 @@ def menu():
     return render_template_string("""
 <style>
 body{
-    background:#0a0a0a;
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+
+    background:
+        linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)),
+        url("https://images.unsplash.com/photo-1600891964599-f61ba0e24092");
+
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+
     color:#fff;
-    font-family:system-ui;
-    padding:18px;
-    font-size:20px;
 }
 
 h1{
