@@ -41,6 +41,8 @@ def order_data(id):
 NAME = "Peri Peri 🌶️"
 
 # ---------------- DATABASE ----------------
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 def init_db():
     conn = sqlite3.connect("restaurant.db")
     c = conn.cursor()
@@ -354,7 +356,9 @@ d.get("phone", "")
     return jsonify({"id": oid})
 
 # ---------------- TRACK ----------------
-@app.route("/track/<int:id>")
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    @app.route("/track/<int:id>")
 def track(id):
     conn = sqlite3.connect("restaurant.db")
     c = conn.cursor()
