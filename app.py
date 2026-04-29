@@ -41,8 +41,6 @@ def order_data(id):
 NAME = "Peri Peri 🌶️"
 
 # ---------------- DATABASE ----------------
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 def init_db():
     conn = sqlite3.connect("restaurant.db")
     c = conn.cursor()
@@ -125,6 +123,8 @@ def menu():
     conn.close()
 
     return render_template_string("""
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
     background:#0a0a0a;
@@ -355,9 +355,7 @@ d.get("phone", "")
 
     return jsonify({"id": oid})
 
-# ---------------- TRACK ----------------
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+# ---------------- TRACK ----------------    
     @app.route("/track/<int:id>")
 def track(id):
     conn = sqlite3.connect("restaurant.db")
@@ -366,6 +364,8 @@ def track(id):
     conn.close()
 
     return render_template_string("""
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
 <script>
@@ -379,6 +379,38 @@ socket.on("status_updated", function(data){
 </script>
 
 <style>  
+/* 🔥 AUTO SCALE BASE */
+html {
+    font-size: 16px;
+}
+
+/* 📱 Small phones */
+@media (max-width: 480px) {
+    html {
+        font-size: 18px;
+    }
+}
+
+/* 📱 Large phones */
+@media (min-width: 481px) and (max-width: 768px) {
+    html {
+        font-size: 20px;
+    }
+}
+
+/* 💻 Tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+    html {
+        font-size: 22px;
+    }
+}
+
+/* 🖥️ Desktop / TV */
+@media (min-width: 1025px) {
+    html {
+        font-size: 24px;
+    }
+}
 body{
     background:#0f0f0f;
     color:white;
