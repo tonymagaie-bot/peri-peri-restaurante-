@@ -258,6 +258,12 @@ button:active{
 </div>
 
 <script>
+if(window.innerWidth < 500){
+    document.body.style.zoom = "1.2";
+}
+</script>
+
+<script>
 let cart = [];
 let total = 0;
 
@@ -379,6 +385,22 @@ socket.on("status_updated", function(data){
 </script>
 
 <style>  
+/* ✅ AUTO SCALING TEXT */
+h1{
+    font-size: 3rem;
+}
+
+h2{
+    font-size: 2.2rem;
+}
+
+p{
+    font-size: 1.4rem;
+}
+
+button{
+    font-size: 1.3rem;
+}
 /* 🔥 AUTO SCALE BASE */
 html {
     font-size: 16px;
