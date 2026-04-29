@@ -199,10 +199,20 @@ button:active{
     background:#111;
     padding:18px;
     border-top:3px solid #ff4d4d;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;   /* ✅ centers everything */
 }
 
 .cart-box h3{
     margin:5px 0;
+    text-align:center;
+}
+
+#cart{
+    width:100%;
+    max-width:400px;
 }
 
 #cart li{
@@ -212,12 +222,16 @@ button:active{
 #total{
     font-size:26px;
     color:#00ff88;
+    text-align:center;
 }
 
+/* 🔥 FIX BUTTON STYLE */
 .cart-box button{
     width:100%;
+    max-width:400px;   /* ✅ keeps it centered on big screens */
     font-size:20px;
     margin-top:10px;
+    display:block;
 }
 </style>
 
