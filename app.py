@@ -652,7 +652,7 @@ button:active{
 <h2>📌 Ativos</h2>
 <div class="grid">
 {% for o in active %}
-<div class="order">
+<div class="order" id="order-{{o.id}}">
 
 <b style="font-size:26px;">Mesa {{o.table}}</b><br>
 👤 {{o.name}}<br><br>
