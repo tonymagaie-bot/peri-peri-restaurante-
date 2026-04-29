@@ -288,7 +288,7 @@ function order(){
     })
     .then(r => r.json())
     .then(d => {
-        alert("Pedido enviado!");
+        document.body.innerHTML = "<h1 style='text-align:center'>✅ Pedido Enviado</h1>";
         localStorage.setItem("lastOrderId", d.id);  // ✅ SAVE ID
         window.location = "/track/" + d.id;
     });
