@@ -125,127 +125,113 @@ def menu():
     return render_template_string("""
 <style>
 body{
-    margin:0;
-    background:#0b0b0b;
+    background:#0a0a0a;
     color:#fff;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+    font-family:system-ui;
+    padding:18px;
+    font-size:20px;
 }
 
-/* HEADER */
-.header{
-    padding:20px;
-    font-size:28px;
-    font-weight:700;
-}
-
-.header span{
+h1{
+    text-align:center;
     color:#ff4d4d;
+    font-size:42px;
+    margin-bottom:10px;
 }
 
-/* INPUTS */
-.input-box{
-    padding:0 20px;
+h2{
+    border-left:6px solid #ff4d4d;
+    padding-left:12px;
+    margin-top:30px;
+    font-size:28px;
 }
 
 input{
     width:100%;
-    padding:16px;
-    margin-bottom:10px;
-    border-radius:14px;
+    padding:18px;
+    margin-bottom:12px;
+    border-radius:12px;
     border:none;
-    font-size:16px;
-    background:#1a1a1a;
-    color:white;
+    font-size:18px;
+    background:#1c1c1c;
+    color:#fff;
 }
 
-/* SECTION */
-.section{
-    padding:20px;
-}
-
-.section h2{
-    margin-bottom:10px;
-    font-size:20px;
-    color:#ccc;
-}
-
-/* FOOD CARD */
 .card{
     background:#161616;
-    border-radius:18px;
-    padding:16px;
-    margin-bottom:12px;
-
+    padding:20px;
+    margin:14px 0;
+    border-radius:16px;
     display:flex;
     justify-content:space-between;
     align-items:center;
+    box-shadow:0 4px 15px rgba(0,0,0,0.5);
 }
 
-.card .info{
-    display:flex;
-    flex-direction:column;
+.card div{
+    font-size:22px;
 }
 
-.card .name{
-    font-size:18px;
-    font-weight:600;
-}
-
-.card .price{
-    font-size:14px;
+.card small{
+    font-size:16px;
     color:#aaa;
 }
 
-/* ADD BUTTON */
-.add-btn{
+button{
     background:#ff4d4d;
+    color:#fff;
     border:none;
-    color:white;
-    padding:10px 14px;
-    border-radius:10px;
-    font-weight:600;
+    padding:14px 22px;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:bold;
 }
 
-/* CART BAR */
-.cart-bar{
+button:active{
+    transform:scale(0.96);
+}
+
+.cart-box{
     position:fixed;
     bottom:0;
     left:0;
     width:100%;
     background:#111;
-    border-top:1px solid #222;
-    padding:15px;
+    padding:18px;
+    border-top:3px solid #ff4d4d;
 
     display:flex;
     flex-direction:column;
-    gap:10px;
+    align-items:center;   /* ✅ centers everything */
 }
 
-/* CART INFO */
-.cart-info{
-    display:flex;
-    justify-content:space-between;
-    font-size:16px;
+.cart-box h3{
+    margin:5px 0;
+    text-align:center;
 }
 
-/* PRIMARY BUTTON */
-.checkout{
-    background:#ff4d4d;
-    border:none;
-    padding:16px;
-    border-radius:14px;
+#cart{
+    width:100%;
+    max-width:400px;
+}
+
+#cart li{
     font-size:18px;
-    font-weight:700;
 }
 
-/* SECONDARY BUTTON */
-.secondary{
-    background:#222;
-    border:none;
-    padding:14px;
-    border-radius:12px;
-    font-size:16px;
-    color:#fff;
+#total{
+    font-size:26px;
+    color:#00ff88;
+    text-align:center;
+}
+
+/* 🔥 FIX BUTTON STYLE */
+.cart-box button{
+    width:100%;
+    max-width:400px;   /* ✅ keeps it centered on big screens */
+    font-size:20px;
+    margin-top:10px;
+    display:block;
 }
 </style>
 
@@ -918,28 +904,4 @@ def send_whatsapp(id):
 
     # adicionar código de Moçambique
     if phone.startswith("0"):
-        phone = "258" + phone[1:]
-    elif not phone.startswith("258"):
-        phone = "258" + phone
-
-    msg = f"""
-🌶️ Peri Peri
-
-Nome: {o[1]}
-Mesa: {o[4]}
-
-Itens:
-{o[2]}
-
-Total: {o[3]} MZN
-Status: {o[5]}
-Data: {o[6]}
-
-Obrigado!
-"""
-
-    url = "https://wa.me/" + phone + "?text=" + urllib.parse.quote(msg)
-    return redirect(url)
-# ---------------- RUN ----------------
-if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000)
+       
