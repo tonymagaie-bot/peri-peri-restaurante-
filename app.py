@@ -707,7 +707,7 @@ Confirmar Pedido
 </div>
 
 <h2>✅ Concluídos</h2>
-<div class="grid">
+<div class="grid" id="done-orders">
 {% for o in done %}
 <div class="order" id="order-{{o.id}}">
 
@@ -755,8 +755,26 @@ socket.on("status_updated", function(data){
     if(data.status === "Recebido, a caminho") statusBox.classList.add("preparing");
 
     if(data.status === "Concluído"){
-        el.remove();
-    }
+    const doneContainer = document.getElementById("done-orders");
+
+    // clone order
+    const clone = el.cloneNode(true);
+
+    // clean buttons (optional)
+    const buttons = clone.querySelectorAll("button");
+    buttons.forEach(b => b.remove());
+
+    // update status style
+    const statusBox = clone.querySelector(".status");
+    statusBox.className = "status done";
+    statusBox.innerText = "Concluído";
+
+    // add to completed section
+    doneContainer.insertAdjacentElement("afterbegin", clone);
+
+    // remove from active
+    el.remove();
+}    
 });
 
 // 🔥 ADD ORDER
