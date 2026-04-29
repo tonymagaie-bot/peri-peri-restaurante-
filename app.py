@@ -125,113 +125,127 @@ def menu():
     return render_template_string("""
 <style>
 body{
-    background:#0a0a0a;
+    margin:0;
+    background:#0b0b0b;
     color:#fff;
-    font-family:system-ui;
-    padding:18px;
-    font-size:20px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
 }
 
-h1{
-    text-align:center;
-    color:#ff4d4d;
-    font-size:42px;
-    margin-bottom:10px;
-}
-
-h2{
-    border-left:6px solid #ff4d4d;
-    padding-left:12px;
-    margin-top:30px;
+/* HEADER */
+.header{
+    padding:20px;
     font-size:28px;
+    font-weight:700;
+}
+
+.header span{
+    color:#ff4d4d;
+}
+
+/* INPUTS */
+.input-box{
+    padding:0 20px;
 }
 
 input{
     width:100%;
-    padding:18px;
-    margin-bottom:12px;
-    border-radius:12px;
+    padding:16px;
+    margin-bottom:10px;
+    border-radius:14px;
     border:none;
-    font-size:18px;
-    background:#1c1c1c;
-    color:#fff;
+    font-size:16px;
+    background:#1a1a1a;
+    color:white;
 }
 
+/* SECTION */
+.section{
+    padding:20px;
+}
+
+.section h2{
+    margin-bottom:10px;
+    font-size:20px;
+    color:#ccc;
+}
+
+/* FOOD CARD */
 .card{
     background:#161616;
-    padding:20px;
-    margin:14px 0;
-    border-radius:16px;
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:12px;
+
     display:flex;
     justify-content:space-between;
     align-items:center;
-    box-shadow:0 4px 15px rgba(0,0,0,0.5);
 }
 
-.card div{
-    font-size:22px;
+.card .info{
+    display:flex;
+    flex-direction:column;
 }
 
-.card small{
-    font-size:16px;
+.card .name{
+    font-size:18px;
+    font-weight:600;
+}
+
+.card .price{
+    font-size:14px;
     color:#aaa;
 }
 
-button{
+/* ADD BUTTON */
+.add-btn{
     background:#ff4d4d;
-    color:#fff;
     border:none;
-    padding:14px 22px;
-    border-radius:12px;
-    font-size:18px;
-    font-weight:bold;
+    color:white;
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:600;
 }
 
-button:active{
-    transform:scale(0.96);
-}
-
-.cart-box{
+/* CART BAR */
+.cart-bar{
     position:fixed;
     bottom:0;
     left:0;
     width:100%;
     background:#111;
-    padding:18px;
-    border-top:3px solid #ff4d4d;
+    border-top:1px solid #222;
+    padding:15px;
 
     display:flex;
     flex-direction:column;
-    align-items:center;   /* ✅ centers everything */
+    gap:10px;
 }
 
-.cart-box h3{
-    margin:5px 0;
-    text-align:center;
+/* CART INFO */
+.cart-info{
+    display:flex;
+    justify-content:space-between;
+    font-size:16px;
 }
 
-#cart{
-    width:100%;
-    max-width:400px;
-}
-
-#cart li{
+/* PRIMARY BUTTON */
+.checkout{
+    background:#ff4d4d;
+    border:none;
+    padding:16px;
+    border-radius:14px;
     font-size:18px;
+    font-weight:700;
 }
 
-#total{
-    font-size:26px;
-    color:#00ff88;
-    text-align:center;
-}
-
-/* 🔥 FIX BUTTON STYLE */
-.cart-box button{
-    width:100%;
-    max-width:400px;   /* ✅ keeps it centered on big screens */
-    font-size:20px;
-    margin-top:10px;
-    display:block;
+/* SECONDARY BUTTON */
+.secondary{
+    background:#222;
+    border:none;
+    padding:14px;
+    border-radius:12px;
+    font-size:16px;
+    color:#fff;
 }
 </style>
 
