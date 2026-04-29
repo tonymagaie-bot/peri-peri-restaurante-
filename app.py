@@ -297,6 +297,16 @@ if(window.innerWidth < 500){
 </script>
 
 <script>
+
+function add(n,p){
+    if(navigator.vibrate) navigator.vibrate(50);
+
+    cart.push(n);
+    total += p;
+
+    ...
+}
+
 let cart = [];
 let total = 0;
 
@@ -304,6 +314,8 @@ function add(n, p){
     cart.push(n);
     total += p;
 
+document.getElementById("cart").innerHTML =
+    cart.map((i, index) => `<li>${index+1}. ${i}</li>`).join("");
     document.getElementById("cart").innerHTML =
         cart.map(i => "<li>" + i + "</li>").join("");
 
