@@ -127,100 +127,132 @@ def menu():
 
 <style>
 body{
-    background:#0a0a0a;
+    background:#0b0b0b;
     color:#fff;
     font-family:system-ui;
-    padding:18px;
-    font-size:20px;
+    padding:16px;
 }
 
+/* HEADER */
 h1{
     text-align:center;
     color:#ff4d4d;
-    font-size:42px;
-    margin-bottom:10px;
+    font-size:34px;
+    margin-bottom:5px;
 }
 
-h2{
-    border-left:6px solid #ff4d4d;
-    padding-left:12px;
-    margin-top:30px;
-    font-size:28px;
-}
-
-input{
-    width:100%;
-    padding:18px;
-    margin-bottom:12px;
-    border-radius:12px;
-    border:none;
-    font-size:18px;
-    background:#1c1c1c;
-    color:#fff;
-}
-
-.card{
-    background:#161616;
-    padding:20px;
-    margin:14px 0;
-    border-radius:16px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:0 4px 15px rgba(0,0,0,0.5);
-}
-
-.card div{
-    font-size:22px;
-}
-
-.card small{
-    font-size:16px;
+p{
+    text-align:center;
     color:#aaa;
 }
 
+/* INPUTS */
+input{
+    width:100%;
+    padding:14px;
+    margin-bottom:10px;
+    border-radius:10px;
+    border:1px solid #2a2a2a;
+    background:#141414;
+    color:#fff;
+}
+
+/* SECTION TITLE */
+h2{
+    margin-top:25px;
+    font-size:20px;
+    color:#ccc;
+}
+
+/* CARD */
+.card{
+    background:#151515;
+    padding:16px;
+    margin:10px 0;
+    border-radius:14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border:1px solid #222;
+    transition:0.2s;
+}
+
+.card:hover{
+    transform:scale(1.02);
+}
+
+/* TEXT */
+.card div{
+    font-size:18px;
+    font-weight:500;
+}
+
+.card small{
+    color:#888;
+}
+
+/* BUTTON */
 button{
     background:#ff4d4d;
-    color:#fff;
     border:none;
-    padding:14px 22px;
-    border-radius:12px;
-    font-size:18px;
+    padding:10px 16px;
+    border-radius:10px;
     font-weight:bold;
+    font-size:14px;
+    transition:0.2s;
+}
+
+button:hover{
+    background:#ff3333;
 }
 
 button:active{
-    transform:scale(0.96);
+    transform:scale(0.95);
 }
 
+/* CART */
 .cart-box{
     position:fixed;
     bottom:0;
     left:0;
     width:100%;
-    background:#111;
-    padding:18px;
-    border-top:3px solid #ff4d4d;
+    background:#0f0f0f;
+    padding:14px;
+    border-top:1px solid #222;
 }
 
+/* CART TITLE */
 .cart-box h3{
-    margin:5px 0;
+    margin:4px 0;
+    font-size:16px;
 }
 
+/* ITEMS */
 #cart li{
-    font-size:18px;
+    font-size:14px;
+    color:#ccc;
 }
 
+/* TOTAL */
 #total{
-    font-size:26px;
+    font-size:20px;
     color:#00ff88;
+    margin-top:5px;
 }
 
+/* ACTION BUTTONS */
 .cart-box button{
     width:100%;
-    font-size:20px;
-    margin-top:10px;
+    margin-top:8px;
+    font-size:16px;
 }
+
+/* SECOND BUTTON */
+.cart-box button:last-child{
+    background:#1f1f1f;
+    color:#fff;
+}
+
 </style>
 
 <h1>🌶️ {{name}}</h1>
