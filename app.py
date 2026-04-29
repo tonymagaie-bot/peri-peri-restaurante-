@@ -884,33 +884,32 @@ def qr_tables():
 """)
 
 # ---------------- WHATSAPP ---------------
-@app.route("/send_whatsapp/int:id")
+@app.route("/send_whatsapp/<int:id>")
 def send_whatsapp(id):
-conn = sqlite3.connect("restaurant.db")
-c = conn.cursor()
-o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
-conn.close()
+    conn = sqlite3.connect("restaurant.db")
+    c = conn.cursor()
+    o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+    conn.close()
 
-phone = ""  
-try:  
-    phone = o[7]  
-except:  
-    pass  
+    phone = ""
+    try:
+        phone = o[7]
+    except:
+        pass
 
-if not phone:  
-    return "<h3>❌ Cliente não forneceu WhatsApp</h3>"  
+    if not phone:
+        return "<h3>❌ Cliente não forneceu WhatsApp</h3>"
 
-# limpar número  
-phone = phone.replace(" ", "").replace("+", "")  
+    # limpar número
+    phone = phone.replace(" ", "").replace("+", "")
 
-# adicionar código de Moçambique  
-if phone.startswith("0"):  
-    phone = "258" + phone[1:]  
-elif not phone.startswith("258"):  
-    phone = "258" + phone  
+    # adicionar código de Moçambique
+    if phone.startswith("0"):
+        phone = "258" + phone[1:]
+    elif not phone.startswith("258"):
+        phone = "258" + phone
 
-msg = f"""
-
+    msg = f"""
 🌶️ Peri Peri
 
 Nome: {o[1]}
@@ -926,4 +925,8 @@ Data: {o[6]}
 Obrigado!
 """
 
-url = "https://wa.me
+    url = "https://wa.me/" + phone + "?text=" + urllib.parse.quote(msg)
+    return redirect(url)
+# ---------------- RUN ----------------
+if __name__ == "__main__":
+    socketio.run(app, host="0.0.0.0", port=5000)
