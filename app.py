@@ -123,136 +123,102 @@ def menu():
     conn.close()
 
     return render_template_string("""
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{
-    background:#0b0b0b;
+    background:#0a0a0a;
     color:#fff;
     font-family:system-ui;
-    padding:16px;
+    padding:18px;
+    font-size:20px;
 }
 
-/* HEADER */
 h1{
     text-align:center;
     color:#ff4d4d;
-    font-size:34px;
-    margin-bottom:5px;
+    font-size:42px;
+    margin-bottom:10px;
 }
 
-p{
-    text-align:center;
-    color:#aaa;
+h2{
+    border-left:6px solid #ff4d4d;
+    padding-left:12px;
+    margin-top:30px;
+    font-size:28px;
 }
 
-/* INPUTS */
 input{
     width:100%;
-    padding:14px;
-    margin-bottom:10px;
-    border-radius:10px;
-    border:1px solid #2a2a2a;
-    background:#141414;
+    padding:18px;
+    margin-bottom:12px;
+    border-radius:12px;
+    border:none;
+    font-size:18px;
+    background:#1c1c1c;
     color:#fff;
 }
 
-/* SECTION TITLE */
-h2{
-    margin-top:25px;
-    font-size:20px;
-    color:#ccc;
-}
-
-/* CARD */
 .card{
-    background:#151515;
-    padding:16px;
-    margin:10px 0;
-    border-radius:14px;
+    background:#161616;
+    padding:20px;
+    margin:14px 0;
+    border-radius:16px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    border:1px solid #222;
-    transition:0.2s;
+    box-shadow:0 4px 15px rgba(0,0,0,0.5);
 }
 
-.card:hover{
-    transform:scale(1.02);
-}
-
-/* TEXT */
 .card div{
-    font-size:18px;
-    font-weight:500;
+    font-size:22px;
 }
 
 .card small{
-    color:#888;
+    font-size:16px;
+    color:#aaa;
 }
 
-/* BUTTON */
 button{
     background:#ff4d4d;
+    color:#fff;
     border:none;
-    padding:10px 16px;
-    border-radius:10px;
+    padding:14px 22px;
+    border-radius:12px;
+    font-size:18px;
     font-weight:bold;
-    font-size:14px;
-    transition:0.2s;
-}
-
-button:hover{
-    background:#ff3333;
 }
 
 button:active{
-    transform:scale(0.95);
+    transform:scale(0.96);
 }
 
-/* CART */
 .cart-box{
     position:fixed;
     bottom:0;
     left:0;
     width:100%;
-    background:#0f0f0f;
-    padding:14px;
-    border-top:1px solid #222;
+    background:#111;
+    padding:18px;
+    border-top:3px solid #ff4d4d;
 }
 
-/* CART TITLE */
 .cart-box h3{
-    margin:4px 0;
-    font-size:16px;
+    margin:5px 0;
 }
 
-/* ITEMS */
 #cart li{
-    font-size:14px;
-    color:#ccc;
+    font-size:18px;
 }
 
-/* TOTAL */
 #total{
-    font-size:20px;
+    font-size:26px;
     color:#00ff88;
-    margin-top:5px;
 }
 
-/* ACTION BUTTONS */
 .cart-box button{
     width:100%;
-    margin-top:8px;
-    font-size:16px;
+    font-size:20px;
+    margin-top:10px;
 }
-
-/* SECOND BUTTON */
-.cart-box button:last-child{
-    background:#1f1f1f;
-    color:#fff;
-}
-
 </style>
 
 <h1>🌶️ {{name}}</h1>
@@ -283,30 +249,13 @@ button:active{
 <ul id="cart"></ul>
 <h3 id="total">0 MZN</h3>
 
-<button onclick="order()">📦 Enviar Pedido</button>
-
-<button onclick="goTrack()" style="background:#1f1f1f;">
-📍 Ver pedido
+<button style="width:100%" onclick="order()">📦 Enviar Pedido</button>
+<button style="width:100%;margin-top:10px;" onclick="goTrack()">
+📦 Ver meu pedido
 </button>
 </div>
 
 <script>
-if(window.innerWidth < 500){
-    document.body.style.zoom = "1.2";
-}
-</script>
-
-<script>
-
-function add(n,p){
-    if(navigator.vibrate) navigator.vibrate(50);
-
-    cart.push(n);
-    total += p;
-
-    ...
-}
-
 let cart = [];
 let total = 0;
 
@@ -314,8 +263,6 @@ function add(n, p){
     cart.push(n);
     total += p;
 
-document.getElementById("cart").innerHTML =
-    cart.map((i, index) => `<li>${index+1}. ${i}</li>`).join("");
     document.getElementById("cart").innerHTML =
         cart.map(i => "<li>" + i + "</li>").join("");
 
@@ -406,7 +353,7 @@ d.get("phone", "")
 
     return jsonify({"id": oid})
 
-# ---------------- TRACK ----------------    
+# ---------------- TRACK ----------------
 @app.route("/track/<int:id>")
 def track(id):
     conn = sqlite3.connect("restaurant.db")
@@ -415,8 +362,6 @@ def track(id):
     conn.close()
 
     return render_template_string("""
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
 <script>
@@ -430,54 +375,6 @@ socket.on("status_updated", function(data){
 </script>
 
 <style>  
-/* ✅ AUTO SCALING TEXT */
-h1{
-    font-size: 3rem;
-}
-
-h2{
-    font-size: 2.2rem;
-}
-
-p{
-    font-size: 1.4rem;
-}
-
-button{
-    font-size: 1.3rem;
-}
-/* 🔥 AUTO SCALE BASE */
-html {
-    font-size: 16px;
-}
-
-/* 📱 Small phones */
-@media (max-width: 480px) {
-    html {
-        font-size: 18px;
-    }
-}
-
-/* 📱 Large phones */
-@media (min-width: 481px) and (max-width: 768px) {
-    html {
-        font-size: 20px;
-    }
-}
-
-/* 💻 Tablets */
-@media (min-width: 769px) and (max-width: 1024px) {
-    html {
-        font-size: 22px;
-    }
-}
-
-/* 🖥️ Desktop / TV */
-@media (min-width: 1025px) {
-    html {
-        font-size: 24px;
-    }
-}
 body{
     background:#0f0f0f;
     color:white;
