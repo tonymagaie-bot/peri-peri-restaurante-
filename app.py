@@ -263,8 +263,9 @@ button:active{
 <ul id="cart"></ul>
 <h3 id="total">0 MZN</h3>
 
-<button onclick="order()">📦 Enviar Pedido</button>
-<button onclick="goTrack()">📦 Ver meu pedido</button>
+<button style="width:100%" onclick="order()">📦 Enviar Pedido</button>
+<button style="width:100%;margin-top:10px;" onclick="goTrack()">
+📦 Ver meu pedido
 </button>
 </div>
 
@@ -883,25 +884,46 @@ def qr_tables():
 """)
 
 # ---------------- WHATSAPP ---------------
-@app.route("/send_whatsapp/<int:id>")
+@app.route("/send_whatsapp/int:id")
 def send_whatsapp(id):
-    conn = sqlite3.connect("restaurant.db")
-    c = conn.cursor()
-    o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
-    conn.close()
+conn = sqlite3.connect("restaurant.db")
+c = conn.cursor()
+o = c.execute("SELECT * FROM orders WHERE id=?", (id,)).fetchone()
+conn.close()
 
-    phone = ""
-    try:
-        phone = o[7]
-    except:
-        pass
+phone = ""  
+try:  
+    phone = o[7]  
+except:  
+    pass  
 
-    if not phone:
-        return "<h3>❌ Cliente não forneceu WhatsApp</h3>"
+if not phone:  
+    return "<h3>❌ Cliente não forneceu WhatsApp</h3>"  
 
-    # limpar número
-    phone = phone.replace(" ", "").replace("+", "")
+# limpar número  
+phone = phone.replace(" ", "").replace("+", "")  
 
-    # adicionar código de Moçambique
-    if phone.startswith("0"):
-       
+# adicionar código de Moçambique  
+if phone.startswith("0"):  
+    phone = "258" + phone[1:]  
+elif not phone.startswith("258"):  
+    phone = "258" + phone  
+
+msg = f"""
+
+🌶️ Peri Peri
+
+Nome: {o[1]}
+Mesa: {o[4]}
+
+Itens:
+{o[2]}
+
+Total: {o[3]} MZN
+Status: {o[5]}
+Data: {o[6]}
+
+Obrigado!
+"""
+
+url = "https://wa.me
