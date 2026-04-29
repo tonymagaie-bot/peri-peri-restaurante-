@@ -650,7 +650,7 @@ button:active{
 <h1>🍹 Bar e Cozinha</h1>
 
 <h2>📌 Ativos</h2>
-<div class="grid">
+<div class="grid" id="active-orders">
 {% for o in active %}
 <div class="order" id="order-{{o.id}}">
 
@@ -761,7 +761,7 @@ socket.on("status_updated", function(data){
 
 // 🔥 ADD ORDER
 function addOrder(o){
-    const container = document.querySelector(".grid");
+    const container = document.getElementById("active-orders");
 
     let food = o.food.length 
         ? "<b>🍳 Comida:</b><br>• " + o.food.join("<br>• ") 
