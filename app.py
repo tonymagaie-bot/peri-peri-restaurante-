@@ -356,7 +356,7 @@ d.get("phone", "")
     return jsonify({"id": oid})
 
 # ---------------- TRACK ----------------    
-    @app.route("/track/<int:id>")
+@app.route("/track/<int:id>")
 def track(id):
     conn = sqlite3.connect("restaurant.db")
     c = conn.cursor()
